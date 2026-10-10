@@ -64,7 +64,13 @@ function PetAvatar({ petId, stageLevel = 1, fallbackIcon, className = "w-14 h-14
       5: '/assets/3d_tiger_master.jpg'
     },
     dino: '/assets/3d_dino.jpg',
-    cat: '/assets/3d_cat.jpg',
+    cat: {
+      1: '/assets/3d_egg.jpg',
+      2: '/assets/3d_cat_baby.jpg',
+      3: '/assets/3d_cat_child.jpg',
+      4: '/assets/3d_cat_scholar.jpg',
+      5: '/assets/3d_cat_master.jpg'
+    },
     dragon: '/assets/3d_dragon.jpg'
   }
 
