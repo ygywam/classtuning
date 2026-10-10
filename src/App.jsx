@@ -97,29 +97,35 @@ function MathText({ text }) {
   const containerRef = useRef(null)
 
   useEffect(() => {
-    if (containerRef.current && window.katex && text) {
-      try {
-        const sanitizedText = text.replace(/₩/g, '\\')
-        const regex = /\$(.*?)\$/g
-        const parts = sanitizedText.split(regex)
-        containerRef.current.innerHTML = ''
+    if (containerRef.current && text) {
+      if (window.katex) {
+        try {
+          // ₩ 및 역슬래시/W 오탈자 통합 보정
+          const sanitizedText = text
+            .replace(/₩/g, '\\')
+            .replace(/\\W/g, '\\')
+            .replace(/W(frac|pm|sqrt|lim|sum|int|infty|alpha|beta|theta|pi)/g, '\\$1')
+          const regex = /\$(.*?)\$/g
+          const parts = sanitizedText.split(regex)
+          containerRef.current.innerHTML = ''
 
-        parts.forEach((part, index) => {
-          if (index % 2 === 1) {
-            const formattedPart = part.replace(/\\(lim|sum|int|prod|max|min)(?!\\limits)_/g, '\\$1\\limits_')
-            const span = document.createElement('span')
-            span.className = 'px-1 inline-block text-indigo-950 font-bold'
-            window.katex.render(formattedPart, span, { throwOnError: false, displayMode: false })
-            containerRef.current.appendChild(span)
-          } else {
-            const txt = document.createTextNode(part)
-            containerRef.current.appendChild(txt)
-          }
-        })
-      } catch (e) {
-        containerRef.current.innerText = text
+          parts.forEach((part, index) => {
+            if (index % 2 === 1) {
+              const formattedPart = part.replace(/\\(lim|sum|int|prod|max|min)(?!\\limits)_/g, '\\$1\\limits_')
+              const span = document.createElement('span')
+              span.className = 'px-1 inline-block text-indigo-950 font-bold'
+              window.katex.render(formattedPart, span, { throwOnError: false, displayMode: false })
+              containerRef.current.appendChild(span)
+            } else {
+              const txt = document.createTextNode(part)
+              containerRef.current.appendChild(txt)
+            }
+          })
+          return
+        } catch (e) {
+          console.warn('KaTeX render error:', e)
+        }
       }
-    } else if (containerRef.current) {
       containerRef.current.innerText = text
     }
   }, [text])
@@ -1302,13 +1308,40 @@ export default function App() {
     alert(`🎉 [답변 채택 완료!]\n해당 답변 작성자(${ansAuthorName})에게 채택 보상 +100 XP가 추가 지급되었습니다!`)
   }
 
+  const handleGoogleLogin = async () => {
+    const url = (window.CLASS_TUNING_CONFIG && window.CLASS_TUNING_CONFIG.supabaseUrl) || localStorage.getItem('CLASS_TUNING_SUPABASE_URL') || ''
+    const key = (window.CLASS_TUNING_CONFIG && window.CLASS_TUNING_CONFIG.supabaseKey) || localStorage.getItem('CLASS_TUNING_SUPABASE_KEY') || ''
+
+    if (window.supabase && url && url.startsWith('http')) {
+      try {
+        const client = window.supabase.createClient(url, key)
+        const { data, error } = await client.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            queryParams: {
+              hd: 'sfl.sen.hs.kr',
+              prompt: 'select_account'
+            },
+            redirectTo: window.location.origin
+          }
+        })
+        if (error) alert('구글 로그인 오류: ' + error.message)
+        return
+      } catch (e) {
+        alert('Supabase 구글 로그인 연결 오류: ' + e.message)
+      }
+    }
+
+    setIsSupabaseModalOpen(true)
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 font-sans">
       <Header
         user={user}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        onGoogleLogin={() => alert('🔒 Supabase 설정 모달(DB/OAuth)에서 계정을 입력하시면 구글 OAuth 로그인으로 연결됩니다.')}
+        onGoogleLogin={handleGoogleLogin}
         onLogout={() => setUser(null)}
         onOpenCreateClass={() => setIsCreateClassOpen(true)}
         onOpenSupabaseModal={() => setIsSupabaseModalOpen(true)}
