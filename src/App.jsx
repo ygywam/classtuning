@@ -1411,15 +1411,17 @@ function UserGuideView({ user, onGoogleLogin, onGoToQa }) {
   )
 }
 
-// 최초 접속 온보딩 모달 (교사: 닉네임 설정 + 첫 클래스 개설 / 학생: 학번 + 별칭 + 펫 알 선택)
+// 최초 접속 온보딩 모달 (교사: 닉네임 설정 + 1호 펫 알 선택 / 학생: 학번 + 별칭 + 펫 알 선택)
 function FirstTimeOnboardingModal({ isOpen, onClose, user, classes = [], onSaveOnboarding }) {
   const isDefaultTeacher = user && (user.role === 'teacher' || (user.email && user.email.includes('ygywam5202')))
   const [role, setRole] = useState(isDefaultTeacher ? 'teacher' : 'student')
   const [nicknameInput, setNicknameInput] = useState(user ? (user.nickname ? user.nickname.replace(' 선생님 (교사)', '') : '') : '')
-  const [studentIdInput, setStudentIdInput] = useState('10301')
-  const [classNameInput, setClassNameInput] = useState('1학년 3반 수학')
-  const [classCodeInput, setClassCodeInput] = useState('MATH103')
+  const [studentIdInput, setStudentIdInput] = useState('')
   const [selectedPetId, setSelectedPetId] = useState('tiger')
+
+  // 학번으로부터 계산된 학년/반
+  const calculatedGrade = studentIdInput && studentIdInput.length >= 3 ? studentIdInput[0] : ''
+  const calculatedClass = studentIdInput && studentIdInput.length >= 3 ? studentIdInput.substring(1, 3).replace(/^0/, '') : ''
 
   if (!isOpen) return null
 
@@ -1430,53 +1432,41 @@ function FirstTimeOnboardingModal({ isOpen, onClose, user, classes = [], onSaveO
       return
     }
 
+    if (role === 'student' && (!studentIdInput || studentIdInput.trim().length < 4)) {
+      alert('학번을 정확히 4~5자리로 입력해 주세요. (예: 10305)')
+      return
+    }
+
     const chosenPet = STARTER_PETS.find(p => p.id === selectedPetId) || STARTER_PETS[0]
     
-    // 학생 학번 기반 소속 학급 자동 배정
+    // 학생 학번 기반 소속 학급 자동 매칭
     let studentClassId = ''
     if (role === 'student' && studentIdInput) {
-      const g = studentIdInput.length >= 3 ? studentIdInput[0] : '1'
-      const c = studentIdInput.length >= 3 ? studentIdInput.substring(1, 3).replace(/^0/, '') : '1'
+      const g = calculatedGrade
+      const c = calculatedClass
       const matched = classes.find(cls => 
         (cls.grade === g && cls.classNum === c) || 
         (cls.name && cls.name.includes(`${g}학년 ${c}반`)) ||
         cls.code === `MATH${g}${c.padStart(2, '0')}`
       )
-      studentClassId = matched ? matched.id : (classes[0] ? classes[0].id : '')
+      studentClassId = matched ? matched.id : (classes[0] ? classes[0].id : 'c_101')
     }
 
     let finalUser = {
       ...user,
       role,
       nickname: role === 'teacher' 
-        ? `${nicknameInput.trim()} 선생님 (교사)` 
+        ? (nicknameInput.trim().includes('선생님') ? nicknameInput.trim() : `${nicknameInput.trim()} 선생님 (교사)`)
         : `${maskStudentInfo(nicknameInput.trim())} (${studentIdInput.trim()})`,
       studentId: role === 'student' ? studentIdInput.trim() : null,
-      myClassId: role === 'student' ? studentClassId : (user ? user.myClassId : ''),
+      myClassId: role === 'student' ? studentClassId : (classes[0]?.id || 'c_101'),
       xp: 0,
       isStarTutor: false,
       activePetId: selectedPetId,
       isOnboarded: true
     }
 
-    let initialClass = null
-    if (role === 'teacher' && classNameInput.trim()) {
-      initialClass = {
-        id: 'c_' + Date.now(),
-        name: classNameInput.trim(),
-        grade: classNameInput.includes('1학년') ? '1' : classNameInput.includes('2학년') ? '2' : '3',
-        classNum: '3',
-        subject: '수학',
-        description: '교사 개설 수학 피드백 학급',
-        code: classCodeInput.trim() || 'MATH' + Math.floor(100 + Math.random() * 900),
-        teacherName: nicknameInput.trim() || '교사',
-        studentCount: 1,
-        createdAt: new Date().toISOString().split('T')[0]
-      }
-      finalUser.myClassId = initialClass.id
-    }
-
-    onSaveOnboarding(finalUser, initialClass, chosenPet)
+    onSaveOnboarding(finalUser, null, chosenPet)
   }
 
   return (
@@ -1525,7 +1515,7 @@ function FirstTimeOnboardingModal({ isOpen, onClose, user, classes = [], onSaveO
                 <label className="block font-bold text-slate-700 mb-1">선생님 성함 / 호칭</label>
                 <input
                   type="text"
-                  placeholder="예: 조OO 선생님"
+                  placeholder="예: 조영규 선생님"
                   value={nicknameInput}
                   onChange={(e) => setNicknameInput(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold bg-white text-xs focus:ring-2 focus:ring-indigo-500"
@@ -1533,34 +1523,19 @@ function FirstTimeOnboardingModal({ isOpen, onClose, user, classes = [], onSaveO
                 />
               </div>
 
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">첫 번째 개설할 학급 이름</label>
-                <input
-                  type="text"
-                  placeholder="예: 1학년 3반 수학"
-                  value={classNameInput}
-                  onChange={(e) => setClassNameInput(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold bg-white text-xs focus:ring-2 focus:ring-indigo-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">학급 참여 코드</label>
-                <input
-                  type="text"
-                  placeholder="예: MATH103"
-                  value={classCodeInput}
-                  onChange={(e) => setClassCodeInput(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 font-mono text-xs uppercase bg-white focus:ring-2 focus:ring-indigo-500"
-                  required
-                />
+              <div className="p-3 bg-white rounded-xl border border-indigo-100 text-indigo-900 text-[11px] leading-relaxed space-y-1">
+                <span className="font-extrabold text-indigo-700 flex items-center gap-1">
+                  <span>💡 학급 개설 안내</span>
+                </span>
+                <p className="text-slate-600">
+                  학급(클래스)은 로그인 후 상단 <b>[+ 클래스 개설]</b> 버튼을 통해 학년·반·과목별로 언제든지 자유롭게 개설하고 관리하실 수 있습니다. (별도의 참여 코드는 필요 없습니다)
+                </p>
               </div>
             </div>
           ) : (
             <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">학번 (5자리)</label>
+                <label className="block font-bold text-slate-700 mb-1">학번 (5자리 입력 시 학급 자동 매칭)</label>
                 <input
                   type="text"
                   placeholder="예: 10305 (1학년 3반 5번)"
@@ -1569,6 +1544,15 @@ function FirstTimeOnboardingModal({ isOpen, onClose, user, classes = [], onSaveO
                   className="w-full px-3 py-2 rounded-xl border border-slate-300 font-mono text-xs bg-white focus:ring-2 focus:ring-indigo-500"
                   required
                 />
+                {calculatedGrade && calculatedClass && (
+                  <p className="text-[11px] text-emerald-700 font-bold mt-1.5 flex items-center gap-1">
+                    <span>✨ 자동 인식:</span>
+                    <span className="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md font-extrabold">
+                      {calculatedGrade}학년 {calculatedClass}반
+                    </span>
+                    <span className="text-slate-500 font-normal">학급으로 자동 배정됩니다.</span>
+                  </p>
+                )}
               </div>
 
               <div>
@@ -1582,7 +1566,7 @@ function FirstTimeOnboardingModal({ isOpen, onClose, user, classes = [], onSaveO
                   required
                 />
                 <p className="text-[10px] text-slate-500 mt-1">
-                  💡 개인정보 보호를 위해 화면에는 <span className="font-bold text-indigo-700">[{maskStudentInfo(nicknameInput || '학생')} ({studentIdInput})]</span> 형태로 자동 마스킹 표시됩니다.
+                  💡 개인정보 보호를 위해 화면에는 <span className="font-bold text-indigo-700">[{maskStudentInfo(nicknameInput || '학생')} ({studentIdInput || '학번'})]</span> 형태로 자동 마스킹 표시됩니다.
                 </p>
               </div>
             </div>
@@ -2658,24 +2642,50 @@ export default function App() {
         const applyAuthUser = (authUser) => {
           if (!authUser) return
           const email = (authUser.email || '').toLowerCase()
-          const googleName = authUser.user_metadata?.full_name || authUser.user_metadata?.name || email.split('@')[0] || '사용자'
+          const meta = authUser.user_metadata || {}
+          const googleName = meta.full_name || meta.name || email.split('@')[0] || '사용자'
           const isTeacher = email.includes('ygywam5202') || email.includes('teacher') || email.includes('admin') || (!/\d{5,}/.test(email) && email.endsWith('@sfl.sen.hs.kr'))
 
+          // 로컬 스토리지에 캐시된 유저 정보 및 영구 온보딩 플래그 확인
           const savedUser = localStorage.getItem('CLASS_TUNING_ACTIVE_USER')
+          const permanentOnboarded = localStorage.getItem(`CLASS_TUNING_ONBOARDED_${email}`)
           let parsedUser = null
           if (savedUser) {
             try { parsedUser = JSON.parse(savedUser) } catch(e){}
           }
+          let parsedPermanent = null
+          if (permanentOnboarded) {
+            try { parsedPermanent = JSON.parse(permanentOnboarded) } catch(e){}
+          }
 
-          if (parsedUser && parsedUser.isOnboarded && parsedUser.email === email) {
-            setUser(parsedUser)
+          // 온보딩 완료 여부 판정: Supabase Auth 메타데이터 or 로컬 영구저장 or 활성 유저 정보
+          const hasOnboarded = Boolean(meta.isOnboarded || parsedPermanent?.isOnboarded || (parsedUser?.isOnboarded && parsedUser?.email === email))
+
+          if (hasOnboarded) {
+            // 이미 온보딩을 마친 계정: 다시 묻지 않고 상태 복원
+            const existingUser = parsedPermanent || (parsedUser && parsedUser.email === email ? parsedUser : {
+              id: authUser.id,
+              email: email,
+              nickname: meta.nickname || (isTeacher ? `${googleName} 선생님 (교사)` : googleName),
+              role: meta.role || (isTeacher ? 'teacher' : 'student'),
+              studentId: meta.studentId || null,
+              myClassId: meta.myClassId || 'c_101',
+              xp: meta.xp || 0,
+              isStarTutor: meta.isStarTutor || false,
+              activePetId: meta.activePetId || 'tiger',
+              isOnboarded: true
+            })
+            setUser(existingUser)
+            setIsOnboardingOpen(false)
+            localStorage.setItem('CLASS_TUNING_ACTIVE_USER', JSON.stringify(existingUser))
           } else {
+            // 아직 한 번도 설정을 안 한 최초 사용자에게만 모달 오픈
             const freshUser = {
               id: authUser.id,
               email: email,
               nickname: isTeacher ? `${googleName} 선생님 (교사)` : googleName,
               role: isTeacher ? 'teacher' : 'student',
-              myClassId: 'c_103',
+              myClassId: 'c_101',
               xp: 0,
               isStarTutor: false,
               activePetId: 'tiger',
@@ -2697,6 +2707,7 @@ export default function App() {
             applyAuthUser(session.user)
           } else if (_event === 'SIGNED_OUT') {
             setUser(null)
+            setIsOnboardingOpen(false)
             localStorage.removeItem('CLASS_TUNING_ACTIVE_USER')
           }
         })
@@ -2714,6 +2725,27 @@ export default function App() {
   const handleSaveOnboarding = async (updatedUser, initialClass, chosenPet) => {
     setUser(updatedUser)
     localStorage.setItem('CLASS_TUNING_ACTIVE_USER', JSON.stringify(updatedUser))
+    if (updatedUser.email) {
+      localStorage.setItem(`CLASS_TUNING_ONBOARDED_${updatedUser.email.toLowerCase()}`, JSON.stringify(updatedUser))
+    }
+
+    // Supabase Auth 사용자 메타데이터에 영구 저장 (타 기기/새로고침에서도 반복 팝업 차단)
+    if (supabaseClient && supabaseClient.auth) {
+      try {
+        await supabaseClient.auth.updateUser({
+          data: {
+            isOnboarded: true,
+            role: updatedUser.role,
+            nickname: updatedUser.nickname,
+            studentId: updatedUser.studentId,
+            myClassId: updatedUser.myClassId,
+            activePetId: updatedUser.activePetId
+          }
+        })
+      } catch (err) {
+        console.warn('온보딩 메타데이터 동기화 실패:', err)
+      }
+    }
 
     if (initialClass) {
       setClasses(prev => {
