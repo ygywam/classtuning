@@ -14,32 +14,33 @@ import {
   Award
 } from 'lucide-react'
 
-// 10종 스타터 동물 데이터베이스
+// 10종 스타터 동물 데이터베이스 (준비 완료: 호랑이, 고양이, 코알라 / 준비 중: 그 외 동물)
 const STARTER_PETS = [
-  { id: 'tiger', name: '호랑이 🐯', icon: '🐯', desc: '용맹하고 지혜로운 수학 호랑이' },
-  { id: 'dino', name: '티라노 🦖', icon: '🦖', desc: '강력한 모의고사 킬러 공룡' },
-  { id: 'cat', name: '샤인 고양이 🐱', icon: '🐱', desc: '영리하고 신속한 피드백 냥이' },
-  { id: 'dog', name: '시바 강사 🐶', icon: '🐶', desc: '충직하고 친절한 공부 멍멍이' },
-  { id: 'deer', name: '꽃사슴 🦌', icon: '🦌', desc: '섬세하고 우아한 개념 사슴' },
-  { id: 'giraffe', name: '키다리 기린 🦒', icon: '🦒', desc: '멀리 내다보는 수식 기린' },
-  { id: 'koala', name: '잠만보 코알라 🐨', icon: '🐨', desc: '집중력이 뛰어난 포근 코알라' },
-  { id: 'hippo', name: '포동 하마 🦛', icon: '🦛', desc: '든든하고 푸근한 기출 하마' },
-  { id: 'penguin', name: '황제 펭귄 🐧', icon: '🐧', desc: '차가운 이성의 논리 펭귄' },
-  { id: 'dragon', name: '전설 드래곤 🐉', icon: '🐉', desc: '만점을 상징하는 용' }
+  { id: 'tiger', name: '호랑이 🐯', icon: '🐯', desc: '용맹하고 지혜로운 수학 호랑이', isReady: true },
+  { id: 'cat', name: '샤인 고양이 🐱', icon: '🐱', desc: '영리하고 신속한 피드백 냥이', isReady: true },
+  { id: 'koala', name: '잠만보 코알라 🐨', icon: '🐨', desc: '집중력이 뛰어난 포근 코알라', isReady: true },
+  { id: 'dino', name: '티라노 🦖', icon: '🦖', desc: '강력한 모의고사 킬러 공룡', isReady: false },
+  { id: 'dragon', name: '전설 드래곤 🐉', icon: '🐉', desc: '만점을 상징하는 용', isReady: false },
+  { id: 'dog', name: '시바 강사 🐶', icon: '🐶', desc: '충직하고 친절한 공부 멍멍이', isReady: false },
+  { id: 'deer', name: '꽃사슴 🦌', icon: '🦌', desc: '섬세하고 우아한 개념 사슴', isReady: false },
+  { id: 'giraffe', name: '키다리 기린 🦒', icon: '🦒', desc: '멀리 내다보는 수식 기린', isReady: false },
+  { id: 'hippo', name: '포동 하마 🦛', icon: '🦛', desc: '든든하고 푸근한 기출 하마', isReady: false },
+  { id: 'penguin', name: '황제 펭귄 🐧', icon: '🐧', desc: '차가운 이성의 논리 펭귄', isReady: false }
 ]
 
-// 반려동물 경험치 레벨 및 5단계 진화 시스템
-function getLevelInfo(xp, selectedPet) {
+// 학습 펫 경험치 레벨 및 5단계 진화 시스템
+function getLevelInfo(xp = 0, selectedPet) {
+  const petName = selectedPet ? selectedPet.name : '학습 펫'
   const petIcon = selectedPet ? selectedPet.icon : '🐯'
-  if (xp >= 1000) return { level: 5, stageName: `전설의 대마왕 🐉 (${selectedPet ? selectedPet.name : '마스터 완육'})`, maxXp: 1000, avatar: '🐉' }
-  if (xp >= 600) return { level: 4, stageName: `수학 통달 학자 🎓 (${selectedPet ? selectedPet.name : '학자'})`, maxXp: 1000, avatar: `🎓${petIcon}` }
-  if (xp >= 300) return { level: 3, stageName: `호기심 유소년 🌿 (${selectedPet ? selectedPet.name : '유소년'})`, maxXp: 600, avatar: `🌿${petIcon}` }
-  if (xp >= 100) return { level: 2, stageName: `갓 부화한 아기 🐣 (${selectedPet ? selectedPet.name : '아기'})`, maxXp: 300, avatar: `🐣${petIcon}` }
-  return { level: 1, stageName: '신비의 미스터리 알 🥚', maxXp: 100, avatar: '🥚' }
+  if (xp >= 1000) return { level: 5, stageName: `5단계 전설 펫 👑 (${petName} 마스터)`, maxXp: 1000, avatar: '👑' }
+  if (xp >= 600) return { level: 4, stageName: `4단계 학사 펫 🎓 (${petName} 학자)`, maxXp: 1000, avatar: `🎓` }
+  if (xp >= 300) return { level: 3, stageName: `3단계 학생 펫 🌿 (${petName} 초등)`, maxXp: 600, avatar: `🌿` }
+  if (xp >= 100) return { level: 2, stageName: `2단계 아기 펫 🐣 (${petName} 부화)`, maxXp: 300, avatar: `🐣` }
+  return { level: 1, stageName: `1단계 신비의 알 🥚 (${petName} 부화 대기)`, maxXp: 100, avatar: '🥚' }
 }
 
-// 학생 실명 보호 자동 마스킹 함수: 이름(학번) (예: 김*구 (10305))
-function maskStudentInfo(name, studentId = '10305') {
+// 학생 실명 보호 자동 마스킹 함수 (학번이 있을 때만 괄호 추가)
+function maskStudentInfo(name, studentId = '') {
   if (!name) return '학생'
   let maskedName = name
   if (name.length <= 2) {
@@ -47,7 +48,7 @@ function maskStudentInfo(name, studentId = '10305') {
   } else {
     maskedName = name[0] + '*'.repeat(name.length - 2) + name[name.length - 1]
   }
-  return `${maskedName} (${studentId})`
+  return studentId ? `${maskedName} (${studentId})` : maskedName
 }
 
 // 3D 고화질 펫 그래픽 렌더링 컴포넌트
@@ -63,7 +64,6 @@ function PetAvatar({ petId, stageLevel = 1, fallbackIcon, className = "w-14 h-14
       4: '/assets/3d_tiger_scholar.jpg',
       5: '/assets/3d_tiger_master.jpg'
     },
-    dino: '/assets/3d_dino.jpg',
     cat: {
       1: '/assets/3d_egg.jpg',
       2: '/assets/3d_cat_baby.jpg',
@@ -71,6 +71,14 @@ function PetAvatar({ petId, stageLevel = 1, fallbackIcon, className = "w-14 h-14
       4: '/assets/3d_cat_scholar.jpg',
       5: '/assets/3d_cat_master.jpg'
     },
+    koala: {
+      1: '/assets/3d_egg.jpg',
+      2: '/assets/3d_koala_baby.jpg',
+      3: '/assets/3d_koala_child.jpg',
+      4: '/assets/3d_koala_scholar.jpg',
+      5: '/assets/3d_koala_master.jpg'
+    },
+    dino: '/assets/3d_dino.jpg',
     dragon: '/assets/3d_dragon.jpg'
   }
 
@@ -237,8 +245,9 @@ function MathToolbar({ onInsertMath }) {
 }
 
 // 헤더 및 상단 탭 네비게이션
-function Header({ user, activeTab, setActiveTab, onGoogleLogin, onLogout, onOpenCreateClass, onOpenSupabaseModal }) {
+function Header({ user, activeTab, setActiveTab, onGoogleLogin, onLogout, onOpenCreateClass, onOpenSupabaseModal, onOpenOnboarding }) {
   const levelInfo = user ? getLevelInfo(user.xp) : null
+  const isTeacher = user && user.role === 'teacher'
 
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-20 shadow-sm">
@@ -251,19 +260,23 @@ function Header({ user, activeTab, setActiveTab, onGoogleLogin, onLogout, onOpen
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-extrabold text-slate-800 tracking-tight">ClassTuning</h1>
               <span className="px-2 py-0.5 text-[10px] bg-indigo-100 text-indigo-700 rounded-full font-bold">서울외고 P2P</span>
-              {user && user.isStarTutor ? (
+              {isTeacher ? (
+                <span className="px-2.5 py-0.5 text-[10px] bg-indigo-700 text-white font-black rounded-full border border-indigo-800 shadow-sm flex items-center gap-1">
+                  👨‍🏫 교사 관리자
+                </span>
+              ) : user && user.isStarTutor ? (
                 <span className="px-2 py-0.5 text-[10px] bg-amber-400 text-slate-950 font-extrabold rounded-full border border-amber-500 shadow-sm flex items-center gap-1">
-                  ⭐ 스타강사 (5단계 완육)
+                  ⭐ 명예 스타 튜터 (5단계 달성)
                 </span>
               ) : (
                 user && (
                   <span className="px-2 py-0.5 text-[10px] bg-slate-100 text-slate-600 font-bold rounded-full border border-slate-200">
-                    진척도: {user.xp}/1000 XP (5단계 완육 시 스타강사)
+                    성장: {user.xp}/1000 XP (5단계 전설 펫 달성 시 스타 튜터)
                   </span>
                 )
               )}
             </div>
-            <p className="text-xs text-slate-500 font-medium">실시간 학급 Q&A & 3D 다마고치 펫 성장</p>
+            <p className="text-xs text-slate-500 font-medium">실시간 학급 P2P 질의응답 & 학습 펫 파트너</p>
           </div>
         </div>
 
@@ -290,7 +303,7 @@ function Header({ user, activeTab, setActiveTab, onGoogleLogin, onLogout, onOpen
               activeTab === 'showcase' ? 'bg-amber-400 text-slate-950 shadow-sm' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            🏆 펫 자랑 게시판
+            🏆 명예의 전당
           </button>
         </div>
 
@@ -303,24 +316,32 @@ function Header({ user, activeTab, setActiveTab, onGoogleLogin, onLogout, onOpen
             <span>DB/OAuth</span>
           </button>
 
-          <button
-            onClick={onOpenCreateClass}
-            className="flex items-center space-x-1.5 px-3 py-2 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl transition-all shadow-sm"
-          >
-            <PlusCircle className="w-4 h-4" />
-            <span>클래스 개설</span>
-          </button>
+          {isTeacher && (
+            <button
+              onClick={onOpenCreateClass}
+              className="flex items-center space-x-1.5 px-3 py-2 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl transition-all shadow-sm"
+            >
+              <PlusCircle className="w-4 h-4" />
+              <span>클래스 개설</span>
+            </button>
+          )}
 
           {user ? (
             <div className="flex items-center space-x-2">
-              <div className="flex items-center space-x-1.5 bg-slate-100 px-3 py-1.5 rounded-xl border">
+              <div 
+                onClick={onOpenOnboarding}
+                title="클릭하여 프로필/학급 설정 변경"
+                className="cursor-pointer flex items-center space-x-1.5 bg-slate-100 hover:bg-slate-200 transition-all px-3 py-1.5 rounded-xl border border-slate-300"
+              >
                 <PetAvatar petId={user.activePetId || 'tiger'} stageLevel={levelInfo ? levelInfo.level : 1} fallbackIcon={levelInfo ? levelInfo.avatar : '🐯'} className="w-6 h-6" />
-                <span className="text-xs font-bold text-slate-800">{maskStudentInfo(user.nickname)}</span>
-                <span className="text-[10px] bg-indigo-600 text-white px-1.5 py-0.5 rounded font-extrabold">
-                  Lv.{levelInfo ? levelInfo.level : 1}
+                <span className="text-xs font-black text-slate-800">
+                  {isTeacher ? user.nickname : user.nickname}
+                </span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded font-black text-white ${isTeacher ? 'bg-indigo-700' : 'bg-emerald-600'}`}>
+                  {isTeacher ? '교사' : `Lv.${levelInfo ? levelInfo.level : 1}`}
                 </span>
               </div>
-              <button onClick={onLogout} className="text-xs text-slate-400 font-bold underline">
+              <button onClick={onLogout} className="text-xs text-slate-400 font-bold hover:text-rose-500">
                 로그아웃
               </button>
             </div>
@@ -462,7 +483,7 @@ function PetStorageView({ user, petCollection, onSelectActivePet, onBuyRandomEgg
   )
 }
 
-// 5단계 완육 펫 자랑 게시판
+// 🏆 명예의 전당 (5단계 마스터 펫 쇼케이스)
 function PetShowcaseView({ user, showcases, onLikeShowcase, onPostShowcase, petCollection }) {
   const hasStage5Pet = petCollection.some(p => p.xp >= 1000)
   const [sloganInput, setSloganInput] = useState('')
@@ -470,14 +491,14 @@ function PetShowcaseView({ user, showcases, onLikeShowcase, onPostShowcase, petC
   const handleSubmitShowcase = (e) => {
     e.preventDefault()
     if (!sloganInput.trim()) {
-      alert('자랑 한줄평 및 수학 학습 노하우를 입력해 주세요.')
+      alert('학습 노하우와 마스터 한줄평을 입력해 주세요.')
       return
     }
     const stage5Pet = petCollection.find(p => p.xp >= 1000) || petCollection[0]
     onPostShowcase({
       id: Date.now(),
-      authorName: user ? maskStudentInfo(user.nickname) : '김*구 (스타강사)',
-      className: '1학년 3반 수학',
+      authorName: user ? (user.role === 'teacher' ? user.nickname : user.nickname) : '학습자',
+      className: user ? (user.myClassId || '수학 학급') : '수학 학급',
       petName: stage5Pet.name,
       petIcon: stage5Pet.icon,
       slogan: sloganInput.trim(),
@@ -485,7 +506,7 @@ function PetShowcaseView({ user, showcases, onLikeShowcase, onPostShowcase, petC
       createdAt: '방금 전'
     })
     setSloganInput('')
-    alert('🎉 완육 펫 자랑 게시글이 등록되었습니다!')
+    alert('🎉 명예의 전당 쇼케이스 글이 등록되었습니다!')
   }
 
   return (
@@ -493,11 +514,11 @@ function PetShowcaseView({ user, showcases, onLikeShowcase, onPostShowcase, petC
       <div className="bg-gradient-to-r from-amber-500 via-amber-600 to-indigo-700 rounded-3xl p-6 text-white shadow-xl flex flex-wrap items-center justify-between gap-6">
         <div className="space-y-2 max-w-lg">
           <span className="px-3 py-1 bg-white/20 text-white text-xs font-black rounded-full border border-white/30">
-            🏆 명예의 전당 & 스타강사 펫 자랑
+            🏆 명예의 전당 (마스터 펫 쇼케이스)
           </span>
-          <h2 className="text-2xl font-black">5단계 전설 펫 마스터 자랑 게시판</h2>
+          <h2 className="text-2xl font-black">5단계 전설 펫 마스터 명예의 전당</h2>
           <p className="text-xs text-amber-100 leading-relaxed">
-            펫을 5단계(1,000 XP)까지 키우고 스타강사 뱃지를 획득한 뛰어난 학습자들의 축하 공간입니다!
+            학습 펫을 5단계(1,000 XP)까지 키우고 스타 튜터 자격을 획득한 열정적인 학습자들의 노하우 공유 공간입니다!
           </p>
         </div>
 
@@ -506,14 +527,14 @@ function PetShowcaseView({ user, showcases, onLikeShowcase, onPostShowcase, petC
 
       <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
         <h3 className="font-black text-slate-800 text-base flex items-center justify-between">
-          <span>✏️ 내 5단계 전설 펫 자랑하기</span>
+          <span>✏️ 내 5단계 전설 펫 쇼케이스 등록</span>
           {hasStage5Pet ? (
             <span className="text-xs font-extrabold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-              ✅ 5단계 완육 자격 획득됨
+              ✅ 5단계 마스터 달성 완료
             </span>
           ) : (
             <span className="text-xs font-bold text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
-              🔒 펫 1종 5단계 (1,000 XP) 달성 시 작성 가능
+              🔒 펫 1종 5단계 (1,000 XP) 달성 시 등록 가능
             </span>
           )}
         </h3>
@@ -568,7 +589,7 @@ function PetShowcaseView({ user, showcases, onLikeShowcase, onPostShowcase, petC
               </p>
 
               <div className="flex items-center justify-between pt-1">
-                <span className="text-xs font-bold text-amber-700">🐉 5단계 완육 마스터 펫</span>
+                <span className="text-xs font-bold text-amber-700">👑 5단계 전설 마스터 펫</span>
                 <button
                   onClick={() => onLikeShowcase(sc.id)}
                   className="px-3.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-extrabold rounded-xl text-xs flex items-center space-x-1 transition-all"
@@ -580,6 +601,230 @@ function PetShowcaseView({ user, showcases, onLikeShowcase, onPostShowcase, petC
             </div>
           ))}
         </div>
+      </div>
+    </div>
+  )
+}
+
+// 최초 접속 온보딩 모달 (교사: 닉네임 설정 + 첫 클래스 개설 / 학생: 학번 + 별칭 + 펫 알 선택)
+function FirstTimeOnboardingModal({ isOpen, onClose, user, onSaveOnboarding }) {
+  const isDefaultTeacher = user && (user.role === 'teacher' || (user.email && user.email.includes('ygywam5202')))
+  const [role, setRole] = useState(isDefaultTeacher ? 'teacher' : 'student')
+  const [nicknameInput, setNicknameInput] = useState(user ? (user.nickname ? user.nickname.replace(' 선생님 (교사)', '') : '') : '')
+  const [studentIdInput, setStudentIdInput] = useState('10301')
+  const [classNameInput, setClassNameInput] = useState('1학년 3반 수학')
+  const [classCodeInput, setClassCodeInput] = useState('MATH103')
+  const [selectedPetId, setSelectedPetId] = useState('tiger')
+
+  if (!isOpen) return null
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (!nicknameInput.trim()) {
+      alert('성함 또는 닉네임을 입력해 주세요.')
+      return
+    }
+
+    const chosenPet = STARTER_PETS.find(p => p.id === selectedPetId) || STARTER_PETS[0]
+    
+    let finalUser = {
+      ...user,
+      role,
+      nickname: role === 'teacher' 
+        ? `${nicknameInput.trim()} 선생님 (교사)` 
+        : `${maskStudentInfo(nicknameInput.trim())} (${studentIdInput.trim()})`,
+      studentId: role === 'student' ? studentIdInput.trim() : null,
+      xp: 0,
+      isStarTutor: false,
+      activePetId: selectedPetId,
+      isOnboarded: true
+    }
+
+    let initialClass = null
+    if (role === 'teacher' && classNameInput.trim()) {
+      initialClass = {
+        id: 'c_' + Date.now(),
+        name: classNameInput.trim(),
+        description: '교사 개설 수학 피드백 학급',
+        code: classCodeInput.trim() || 'MATH' + Math.floor(100 + Math.random() * 900),
+        studentCount: 1,
+        qrUrl: `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${classCodeInput.trim()}`
+      }
+      finalUser.myClassId = initialClass.id
+    }
+
+    onSaveOnboarding(finalUser, initialClass, chosenPet)
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md">
+      <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border-2 border-indigo-400 space-y-4 text-left relative max-h-[90vh] overflow-y-auto">
+        <div className="text-center space-y-1">
+          <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center mx-auto text-2xl shadow-md">
+            🎓
+          </div>
+          <h3 className="text-xl font-extrabold text-slate-800 tracking-tight">ClassTuning 첫 시작 설정</h3>
+          <p className="text-xs text-slate-500 font-medium">선생님과 학생 모두 0 XP 신비의 알에서 함께 시작합니다.</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+          <div>
+            <label className="block font-bold text-slate-700 mb-1.5">내 역할 선택</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setRole('teacher')}
+                className={`py-2.5 px-3 rounded-2xl font-black text-xs border transition-all flex items-center justify-center gap-1.5 ${
+                  role === 'teacher'
+                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                }`}
+              >
+                <span>👨‍🏫 교사 관리자</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setRole('student')}
+                className={`py-2.5 px-3 rounded-2xl font-black text-xs border transition-all flex items-center justify-center gap-1.5 ${
+                  role === 'student'
+                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                }`}
+              >
+                <span>🧑‍🎓 학생</span>
+              </button>
+            </div>
+          </div>
+
+          {role === 'teacher' ? (
+            <div className="space-y-3 bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">선생님 성함 / 호칭</label>
+                <input
+                  type="text"
+                  placeholder="예: 조OO 선생님"
+                  value={nicknameInput}
+                  onChange={(e) => setNicknameInput(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold bg-white text-xs focus:ring-2 focus:ring-indigo-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">첫 번째 개설할 학급 이름</label>
+                <input
+                  type="text"
+                  placeholder="예: 1학년 3반 수학"
+                  value={classNameInput}
+                  onChange={(e) => setClassNameInput(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold bg-white text-xs focus:ring-2 focus:ring-indigo-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">학급 참여 코드</label>
+                <input
+                  type="text"
+                  placeholder="예: MATH103"
+                  value={classCodeInput}
+                  onChange={(e) => setClassCodeInput(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 font-mono text-xs uppercase bg-white focus:ring-2 focus:ring-indigo-500"
+                  required
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">학번 (5자리)</label>
+                <input
+                  type="text"
+                  placeholder="예: 10305 (1학년 3반 5번)"
+                  value={studentIdInput}
+                  onChange={(e) => setStudentIdInput(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 font-mono text-xs bg-white focus:ring-2 focus:ring-indigo-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">이름 또는 별칭</label>
+                <input
+                  type="text"
+                  placeholder="예: 홍길동"
+                  value={nicknameInput}
+                  onChange={(e) => setNicknameInput(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold bg-white text-xs focus:ring-2 focus:ring-indigo-500"
+                  required
+                />
+                <p className="text-[10px] text-slate-500 mt-1">
+                  💡 개인정보 보호를 위해 화면에는 <span className="font-bold text-indigo-700">[{maskStudentInfo(nicknameInput || '학생')} ({studentIdInput})]</span> 형태로 자동 마스킹 표시됩니다.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <div>
+            <label className="block font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+              <span>🥚 1호 펫 알 수령 & 성장 목표 동물 선택 (0 XP 시작)</span>
+              <span className="text-[10px] text-indigo-600 font-extrabold bg-indigo-50 px-2 py-0.5 rounded-full">
+                현재 3D 완료: 호랑이 · 고양이 · 코알라
+              </span>
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {STARTER_PETS.map((pet) => {
+                const isReady = pet.isReady !== false
+                const isSelected = selectedPetId === pet.id
+                return (
+                  <div
+                    key={pet.id}
+                    onClick={() => {
+                      if (!isReady) {
+                        alert(`⚠️ [${pet.name}]은(는) 현재 3D 입체 그래픽 준비 중입니다.\n현재 부화 가능한 동물: 호랑이 🐯, 고양이 🐱, 코알라 🐨`)
+                        return
+                      }
+                      setSelectedPetId(pet.id)
+                    }}
+                    className={`relative p-3 rounded-2xl border transition-all text-center space-y-1 ${
+                      !isReady
+                        ? 'opacity-55 cursor-not-allowed bg-slate-50 border-slate-200'
+                        : isSelected
+                        ? 'cursor-pointer border-indigo-600 bg-indigo-50 shadow-md ring-2 ring-indigo-400'
+                        : 'cursor-pointer border-slate-200 bg-white hover:border-slate-300'
+                    }`}
+                  >
+                    {!isReady ? (
+                      <span className="absolute top-2 right-2 px-1.5 py-0.5 bg-slate-200 text-slate-600 text-[9px] font-black rounded-md border border-slate-300">
+                        준비 중
+                      </span>
+                    ) : isSelected ? (
+                      <span className="absolute top-2 right-2 px-1.5 py-0.5 bg-indigo-600 text-white text-[9px] font-black rounded-md shadow-sm">
+                        선택됨 ✨
+                      </span>
+                    ) : (
+                      <span className="absolute top-2 right-2 px-1.5 py-0.5 bg-emerald-100 text-emerald-800 text-[9px] font-black rounded-md">
+                        부화 가능
+                      </span>
+                    )}
+                    <div className="w-12 h-12 mx-auto rounded-xl overflow-hidden shadow-sm">
+                      <PetAvatar petId={pet.id} stageLevel={1} className="w-full h-full" />
+                    </div>
+                    <div className="font-extrabold text-xs text-slate-800">{pet.name}</div>
+                    <div className="text-[10px] text-slate-400">{pet.desc}</div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs rounded-xl shadow-md transition-all mt-2"
+          >
+            설정 완료하고 ClassTuning 시작하기 🚀
+          </button>
+        </form>
       </div>
     </div>
   )
@@ -855,13 +1100,17 @@ function MainDashboard({ user, classes, questions, onAddQuestion, onAddAnswer, o
           <div className="bg-gradient-to-br from-indigo-900 via-indigo-800 to-slate-900 rounded-3xl p-5 text-white shadow-md space-y-3 border border-indigo-700">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-black bg-white/20 text-white px-2.5 py-0.5 rounded-full border border-white/30">
-                🐾 3D 다마고치 키우기
+                🌱 나만의 학습 펫 파트너
               </span>
-              {user.isStarTutor && (
-                <span className="text-[10px] bg-amber-400 text-slate-950 font-black px-2 py-0.5 rounded-full">
-                  ⭐ 스타강사
+              {user.role === 'teacher' ? (
+                <span className="text-[10px] bg-indigo-500 text-white font-black px-2 py-0.5 rounded-full">
+                  👨‍🏫 교사 관리자
                 </span>
-              )}
+              ) : user.isStarTutor ? (
+                <span className="text-[10px] bg-amber-400 text-slate-950 font-black px-2 py-0.5 rounded-full">
+                  ⭐ 스타 튜터
+                </span>
+              ) : null}
             </div>
 
             <div className="flex items-center space-x-3.5">
@@ -1168,10 +1417,11 @@ export default function App() {
       email: 'ygywam5202@sfl.sen.hs.kr',
       nickname: '교사 관리자',
       role: 'teacher',
-      myClassId: 'c1',
-      xp: 1000,
-      isStarTutor: true,
-      activePetId: 'tiger'
+      myClassId: '',
+      xp: 0,
+      isStarTutor: false,
+      activePetId: 'tiger',
+      isOnboarded: false
     }
   })
 
@@ -1184,9 +1434,13 @@ export default function App() {
   const [isStarterModalOpen, setIsStarterModalOpen] = useState(false)
   const [isCreateClassOpen, setIsCreateClassOpen] = useState(false)
   const [isSupabaseModalOpen, setIsSupabaseModalOpen] = useState(false)
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false)
   const [selectedQrClass, setSelectedQrClass] = useState(null)
 
-  const [classes, setClasses] = useState([])
+  const [classes, setClasses] = useState(() => {
+    const saved = localStorage.getItem('CLASS_TUNING_CLASSES')
+    return saved ? JSON.parse(saved) : []
+  })
   const [questions, setQuestions] = useState([])
 
   // 🛡️ Supabase Real OAuth 로그인 감지 및 계정 권한 동기화
@@ -1200,23 +1454,33 @@ export default function App() {
 
         const applyAuthUser = (authUser) => {
           if (!authUser) return
-          const email = authUser.email || ''
+          const email = (authUser.email || '').toLowerCase()
           const googleName = authUser.user_metadata?.full_name || authUser.user_metadata?.name || email.split('@')[0] || '사용자'
           const isTeacher = email.includes('ygywam5202') || email.includes('teacher') || email.includes('admin') || (!/\d{5,}/.test(email) && email.endsWith('@sfl.sen.hs.kr'))
 
-          const loggedUser = {
-            id: authUser.id,
-            email: email,
-            nickname: isTeacher ? `${googleName} 선생님 (교사)` : maskStudentInfo(googleName),
-            role: isTeacher ? 'teacher' : 'student',
-            myClassId: 'c1',
-            xp: isTeacher ? 1000 : 0,
-            isStarTutor: isTeacher,
-            activePetId: 'tiger'
+          const savedUser = localStorage.getItem('CLASS_TUNING_ACTIVE_USER')
+          let parsedUser = null
+          if (savedUser) {
+            try { parsedUser = JSON.parse(savedUser) } catch(e){}
           }
 
-          setUser(loggedUser)
-          localStorage.setItem('CLASS_TUNING_ACTIVE_USER', JSON.stringify(loggedUser))
+          if (parsedUser && parsedUser.isOnboarded && parsedUser.email === email) {
+            setUser(parsedUser)
+          } else {
+            const freshUser = {
+              id: authUser.id,
+              email: email,
+              nickname: isTeacher ? `${googleName} 선생님 (교사)` : googleName,
+              role: isTeacher ? 'teacher' : 'student',
+              myClassId: '',
+              xp: 0,
+              isStarTutor: false,
+              activePetId: 'tiger',
+              isOnboarded: false
+            }
+            setUser(freshUser)
+            setIsOnboardingOpen(true)
+          }
         }
 
         client.auth.getSession().then(({ data: { session } }) => {
@@ -1241,6 +1505,29 @@ export default function App() {
     }
   }, [])
 
+  const handleSaveOnboarding = (updatedUser, initialClass, chosenPet) => {
+    setUser(updatedUser)
+    localStorage.setItem('CLASS_TUNING_ACTIVE_USER', JSON.stringify(updatedUser))
+
+    if (initialClass) {
+      setClasses(prev => {
+        const next = [initialClass, ...prev.filter(c => c.id !== initialClass.id)]
+        localStorage.setItem('CLASS_TUNING_CLASSES', JSON.stringify(next))
+        return next
+      })
+    }
+
+    if (chosenPet) {
+      setPetCollection([
+        { id: chosenPet.id, name: chosenPet.name, icon: chosenPet.icon, xp: 0, isSelected: true }
+      ])
+      setSelectedPet(chosenPet)
+    }
+
+    setIsOnboardingOpen(false)
+    alert(`🎉 [ClassTuning 설정 완료!]\n0 XP 신비의 알 [${chosenPet ? chosenPet.name : '학습 펫'}]과 함께 활동을 시작합니다!`)
+  }
+
   const handleSelectActivePet = (petId) => {
     setPetCollection(prev =>
       prev.map(p => ({ ...p, isSelected: p.id === petId }))
@@ -1258,7 +1545,8 @@ export default function App() {
       return
     }
 
-    const randomPet = STARTER_PETS[Math.floor(Math.random() * STARTER_PETS.length)]
+    const readyPets = STARTER_PETS.filter(p => p.isReady !== false)
+    const randomPet = readyPets[Math.floor(Math.random() * readyPets.length)] || STARTER_PETS[0]
     setUser(prev => ({ ...prev, xp: prev.xp - 100 }))
 
     setPetCollection(prev => {
@@ -1400,9 +1688,13 @@ export default function App() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onGoogleLogin={handleGoogleLogin}
-        onLogout={() => setUser(null)}
+        onLogout={() => {
+          setUser(null)
+          localStorage.removeItem('CLASS_TUNING_ACTIVE_USER')
+        }}
         onOpenCreateClass={() => setIsCreateClassOpen(true)}
         onOpenSupabaseModal={() => setIsSupabaseModalOpen(true)}
+        onOpenOnboarding={() => setIsOnboardingOpen(true)}
       />
 
       <main className="flex-1">
@@ -1440,12 +1732,19 @@ export default function App() {
       </main>
 
       <footer className="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
-        ClassTuning P2P Platform &copy; 2026 | 서울외고 학급 Q&A & 3D 다마고치 펫 & 차등 XP 엔진
+        ClassTuning P2P Platform &copy; 2026 | 서울외고 학급 P2P 질의응답 & 학습 펫 파트너
       </footer>
 
       <SupabaseConfigModal
         isOpen={isSupabaseModalOpen}
         onClose={() => setIsSupabaseModalOpen(false)}
+      />
+
+      <FirstTimeOnboardingModal
+        isOpen={isOnboardingOpen}
+        onClose={() => setIsOnboardingOpen(false)}
+        user={user}
+        onSaveOnboarding={handleSaveOnboarding}
       />
     </div>
   )
