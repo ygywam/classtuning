@@ -11,8 +11,10 @@ import {
   Lock,
   Search,
   ThumbsUp,
-  Award
+  Award,
+  Trash2
 } from 'lucide-react'
+
 
 // 10종 스타터 동물 데이터베이스 (준비 완료: 호랑이, 고양이, 코알라, 드래곤 / 준비 중: 그 외 동물)
 const STARTER_PETS = [
@@ -1957,7 +1959,7 @@ function SupabaseConfigModal({ isOpen, onClose }) {
 }
 
 // 메인 Q&A 대시보드
-function MainDashboard({ user, classes, questions, onAddQuestion, onAddAnswer, onAdoptAnswer, onGoToGuide }) {
+function MainDashboard({ user, classes, questions, onAddQuestion, onAddAnswer, onAdoptAnswer, onDeleteClass, onGoToGuide }) {
   const [selectedClassId, setSelectedClassId] = useState('all')
   const [questionTitle, setQuestionTitle] = useState('')
   const [questionContent, setQuestionContent] = useState('')
@@ -2194,22 +2196,46 @@ function MainDashboard({ user, classes, questions, onAddQuestion, onAddAnswer, o
             </button>
 
             {classes.map((c) => (
-              <button
+              <div
                 key={c.id}
-                onClick={() => setSelectedClassId(c.id)}
-                className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all truncate flex items-center justify-between ${
+                className={`group w-full rounded-xl transition-all flex items-center justify-between pr-2 ${
                   selectedClassId === c.id
                     ? 'bg-indigo-600 text-white shadow-sm'
                     : 'bg-slate-50 text-slate-700 hover:bg-slate-100'
                 }`}
               >
-                <span className="truncate">{c.name}</span>
-                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                  selectedClassId === c.id ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-600'
-                }`}>
-                  {c.studentCount || 1}명
-                </span>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedClassId(c.id)}
+                  className="flex-1 text-left px-3.5 py-2.5 text-xs font-bold truncate flex items-center justify-between"
+                >
+                  <span className="truncate">{c.name}</span>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ml-1.5 ${
+                    selectedClassId === c.id ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-600'
+                  }`}>
+                    {c.studentCount || 0}명
+                  </span>
+                </button>
+                {user && user.role === 'teacher' && onDeleteClass && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      if (confirm(`⚠️ [${c.name}] 학급을 정말 삭제하시겠습니까?\n해당 학급에 등록된 질문과 답변 데이터도 함께 정리됩니다.`)) {
+                        onDeleteClass(c.id, c.name)
+                      }
+                    }}
+                    title="학급 삭제 (교사 전용)"
+                    className={`p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity ${
+                      selectedClassId === c.id
+                        ? 'text-white/80 hover:text-white hover:bg-white/20'
+                        : 'text-slate-400 hover:text-rose-600 hover:bg-rose-50'
+                    }`}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
             ))}
           </div>
         </div>
@@ -2824,6 +2850,37 @@ export default function App() {
     alert(`🎉 [${newClass.name}] 클래스가 성공적으로 개설되었습니다!\n${supabaseClient ? '중앙 DB에 저장되어 모든 학생/교사 기기에 실시간 동기화됩니다.' : '현재 DB 미연동 상태입니다. [DB 설정] 완료 시 전교생에게 실시간 동기화됩니다.'}`)
   }
 
+  const handleDeleteClass = async (classId, className) => {
+    // 1. 낙관적 로컬 상태 즉시 삭제
+    setClasses((prev) => {
+      const next = prev.filter((c) => c.id !== classId)
+      localStorage.setItem('CLASS_TUNING_CLASSES', JSON.stringify(next))
+      return next
+    })
+
+    // 선택 학급 조정
+    if (user?.myClassId === classId) {
+      setUser((prev) => {
+        const remaining = classes.filter((c) => c.id !== classId)
+        const updated = { ...prev, myClassId: remaining[0]?.id || '' }
+        localStorage.setItem('CLASS_TUNING_ACTIVE_USER', JSON.stringify(updated))
+        return updated
+      })
+    }
+
+    // 2. Supabase 중앙 DB에서 영구 삭제 (전교생 화면에서도 실시간 제거)
+    if (supabaseClient) {
+      try {
+        const { error } = await supabaseClient.from('classes').delete().eq('id', classId)
+        if (error) console.warn('Supabase class delete error:', error.message)
+      } catch (err) {
+        console.warn('DB 클래스 삭제 실패:', err)
+      }
+    }
+
+    alert(`🗑️ [${className}] 학급이 성공적으로 삭제되었습니다.`)
+  }
+
   const handleAddQuestion = async (newQ) => {
     setQuestions((prev) => {
       const next = [newQ, ...prev]
@@ -2999,6 +3056,7 @@ export default function App() {
             onAddQuestion={handleAddQuestion}
             onAddAnswer={handleAddAnswer}
             onAdoptAnswer={handleAdoptAnswer}
+            onDeleteClass={handleDeleteClass}
             onGoToGuide={() => setActiveTab('guide')}
           />
         )}
