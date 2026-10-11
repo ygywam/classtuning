@@ -1167,10 +1167,10 @@ function UserGuideView({ user, onGoogleLogin, onGoToQa }) {
                 </div>
               </div>
 
-              {/* 오른쪽: 3D 펫 5단계 실시간 프리뷰어 */}
+              {/* 오른쪽: 3D 펫 5단계 실시간 미스터리 프리뷰어 */}
               <div className="bg-slate-50 p-5 rounded-3xl border-2 border-indigo-200 space-y-4">
                 <div className="flex items-center justify-between border-b pb-2">
-                  <span className="font-black text-xs text-slate-700">🐾 3D 펫 진화 단계 직접 확인</span>
+                  <span className="font-black text-xs text-slate-700">🐾 성장 단계별 미리보기</span>
                   <div className="flex space-x-1">
                     {STARTER_PETS.filter(p => p.isReady).map(p => (
                       <button
@@ -1203,25 +1203,52 @@ function UserGuideView({ user, onGoogleLogin, onGoToQa }) {
                   ))}
                 </div>
 
-                {/* 3D 렌더링 화면 */}
+                {/* 미스터리 잠금 및 렌더링 화면 */}
                 <div className="bg-white rounded-2xl p-6 border border-indigo-100 text-center space-y-3 shadow-inner">
-                  <div className="flex justify-center">
-                    <PetAvatar
-                      petId={previewPetId}
-                      stageLevel={previewLevel}
-                      className="w-32 h-32"
-                    />
-                  </div>
-                  <div>
-                    <h4 className="font-black text-slate-800 text-base">{previewInfo.stageName}</h4>
-                    <p className="text-xs text-indigo-600 font-bold mt-0.5">
-                      {previewLevel === 1 && '🥚 0 ~ 99 XP: 아직 깨어나지 않은 신비의 알'}
-                      {previewLevel === 2 && '🐣 100 ~ 299 XP: 첫 번째 부화에 성공한 귀여운 아기'}
-                      {previewLevel === 3 && '🌿 300 ~ 599 XP: 가방을 메고 수학 모험을 떠난 학생'}
-                      {previewLevel === 4 && '🎓 600 ~ 999 XP: 도서관의 지혜를 흡수한 학사모 학자'}
-                      {previewLevel === 5 && '👑 1000 XP+: 최고의 스타 튜터 자격을 획득한 전설 황제'}
-                    </p>
-                  </div>
+                  {previewLevel === 1 ? (
+                    <div className="space-y-2">
+                      <div className="flex justify-center">
+                        <PetAvatar
+                          petId="egg"
+                          stageLevel={1}
+                          className="w-32 h-32"
+                        />
+                      </div>
+                      <h4 className="font-black text-slate-800 text-base">1단계 신비의 알 🥚</h4>
+                      <p className="text-xs text-indigo-600 font-bold">
+                        0 ~ 99 XP: 누구나 처음 지급받는 잠재력의 신비의 알입니다.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="py-2 space-y-3">
+                      {/* 미스터리 시크릿 카드 */}
+                      <div className="w-32 h-32 mx-auto rounded-3xl bg-gradient-to-br from-indigo-900 via-slate-800 to-indigo-950 border-2 border-amber-300 shadow-xl flex flex-col items-center justify-center space-y-1 relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-amber-400/10 animate-pulse"></div>
+                        <span className="text-4xl animate-bounce">
+                          {previewLevel === 2 ? '🐣' : previewLevel === 3 ? '🌿' : previewLevel === 4 ? '🎓' : '👑'}
+                        </span>
+                        <div className="flex items-center space-x-1 text-amber-300 font-black text-[11px] z-10">
+                          <Lock className="w-3 h-3 text-amber-400" />
+                          <span>비밀 잠금</span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <h4 className="font-black text-slate-800 text-sm flex items-center justify-center gap-1.5">
+                          <span>🔒 {previewLevel}단계:</span>
+                          <span className="text-amber-600">
+                            {previewLevel === 2 && '아기 펫 부화 (100 XP)'}
+                            {previewLevel === 3 && '학생 펫 진화 (300 XP)'}
+                            {previewLevel === 4 && '학사 펫 진화 (600 XP)'}
+                            {previewLevel === 5 && '전설 마스터 등극 (1,000 XP)'}
+                          </span>
+                        </h4>
+                        <p className="text-xs text-slate-500 font-medium max-w-xs mx-auto leading-relaxed">
+                          다음 카드를 여는 짜릿한 기쁨을 위해 진화 모습은 비밀입니다! Q&A 활동으로 경험치를 모아 직접 잠금 해제하세요! ✨
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -1273,7 +1300,7 @@ function UserGuideView({ user, onGoogleLogin, onGoToQa }) {
                 </div>
               </div>
 
-              {/* 오른쪽: 알 부화 미니 가챠 체험 */}
+              {/* 오른쪽: 알 부화 미니 가챠 체험 (스포일러 방지 비밀 모드) */}
               <div className="bg-slate-50 p-5 rounded-3xl border-2 border-indigo-200 space-y-4">
                 <div className="flex items-center justify-between border-b pb-2">
                   <span className="font-black text-xs text-slate-700">🥚 신비의 알 부화 시뮬레이터</span>
@@ -1284,18 +1311,22 @@ function UserGuideView({ user, onGoogleLogin, onGoToQa }) {
 
                 <div className="text-center py-4 space-y-3 bg-white rounded-2xl border border-indigo-100 shadow-inner">
                   {simHatched ? (
-                    <div className="space-y-2 animate-bounce">
-                      <div className="flex justify-center">
-                        <PetAvatar petId={simHatched.id} stageLevel={2} className="w-24 h-24" />
+                    <div className="space-y-2">
+                      <div className="w-24 h-24 mx-auto rounded-3xl bg-gradient-to-tr from-amber-400 via-amber-300 to-indigo-500 flex items-center justify-center text-4xl shadow-lg border-2 border-amber-200 animate-bounce">
+                        ✨
                       </div>
-                      <h4 className="font-black text-indigo-900 text-sm">🎉 [{simHatched.name}] 아기 펫 부화 성공!</h4>
-                      <p className="text-xs text-slate-500">{simHatched.desc}</p>
+                      <h4 className="font-black text-indigo-950 text-sm">
+                        🎉 새로운 3D 생명의 기운이 깨어났습니다!
+                      </h4>
+                      <p className="text-xs text-amber-700 font-bold">
+                        🔒 부화한 동물은 비밀! 실제 100 XP로 부화시켜 확인하세요 🎁
+                      </p>
                     </div>
                   ) : (
                     <div className="space-y-2">
                       <div className="text-6xl animate-egg-pulse">🥚</div>
                       <h4 className="font-black text-slate-800 text-sm">신비의 3D 알이 잠들어 있습니다</h4>
-                      <p className="text-xs text-slate-400">아래 버튼을 눌러 부화의 순간을 체험해보세요!</p>
+                      <p className="text-xs text-slate-400">아래 버튼을 눌러 알 부화의 기운을 체험해보세요!</p>
                     </div>
                   )}
 
@@ -1304,7 +1335,7 @@ function UserGuideView({ user, onGoogleLogin, onGoToQa }) {
                       onClick={handleSimHatch}
                       className="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-black text-xs rounded-xl shadow-md transition-all animate-breathe-3d"
                     >
-                      {simHatched ? '🔄 다른 알 다시 부화해보기' : '🥚 신비의 알 부화시키기 (+100 XP 체험)'}
+                      {simHatched ? '🔄 알 부화 다시 체험하기' : '🥚 신비의 알 부화 반응 체험 (+100 XP)'}
                     </button>
                   </div>
                 </div>
@@ -1379,7 +1410,7 @@ function UserGuideView({ user, onGoogleLogin, onGoToQa }) {
 }
 
 // 최초 접속 온보딩 모달 (교사: 닉네임 설정 + 첫 클래스 개설 / 학생: 학번 + 별칭 + 펫 알 선택)
-function FirstTimeOnboardingModal({ isOpen, onClose, user, onSaveOnboarding }) {
+function FirstTimeOnboardingModal({ isOpen, onClose, user, classes = [], onSaveOnboarding }) {
   const isDefaultTeacher = user && (user.role === 'teacher' || (user.email && user.email.includes('ygywam5202')))
   const [role, setRole] = useState(isDefaultTeacher ? 'teacher' : 'student')
   const [nicknameInput, setNicknameInput] = useState(user ? (user.nickname ? user.nickname.replace(' 선생님 (교사)', '') : '') : '')
@@ -1399,6 +1430,19 @@ function FirstTimeOnboardingModal({ isOpen, onClose, user, onSaveOnboarding }) {
 
     const chosenPet = STARTER_PETS.find(p => p.id === selectedPetId) || STARTER_PETS[0]
     
+    // 학생 학번 기반 소속 학급 자동 배정
+    let studentClassId = ''
+    if (role === 'student' && studentIdInput) {
+      const g = studentIdInput.length >= 3 ? studentIdInput[0] : '1'
+      const c = studentIdInput.length >= 3 ? studentIdInput.substring(1, 3).replace(/^0/, '') : '1'
+      const matched = classes.find(cls => 
+        (cls.grade === g && cls.classNum === c) || 
+        (cls.name && cls.name.includes(`${g}학년 ${c}반`)) ||
+        cls.code === `MATH${g}${c.padStart(2, '0')}`
+      )
+      studentClassId = matched ? matched.id : (classes[0] ? classes[0].id : '')
+    }
+
     let finalUser = {
       ...user,
       role,
@@ -1406,6 +1450,7 @@ function FirstTimeOnboardingModal({ isOpen, onClose, user, onSaveOnboarding }) {
         ? `${nicknameInput.trim()} 선생님 (교사)` 
         : `${maskStudentInfo(nicknameInput.trim())} (${studentIdInput.trim()})`,
       studentId: role === 'student' ? studentIdInput.trim() : null,
+      myClassId: role === 'student' ? studentClassId : (user ? user.myClassId : ''),
       xp: 0,
       isStarTutor: false,
       activePetId: selectedPetId,
@@ -1417,10 +1462,14 @@ function FirstTimeOnboardingModal({ isOpen, onClose, user, onSaveOnboarding }) {
       initialClass = {
         id: 'c_' + Date.now(),
         name: classNameInput.trim(),
+        grade: classNameInput.includes('1학년') ? '1' : classNameInput.includes('2학년') ? '2' : '3',
+        classNum: '3',
+        subject: '수학',
         description: '교사 개설 수학 피드백 학급',
         code: classCodeInput.trim() || 'MATH' + Math.floor(100 + Math.random() * 900),
+        teacherName: nicknameInput.trim() || '교사',
         studentCount: 1,
-        qrUrl: `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${classCodeInput.trim()}`
+        createdAt: new Date().toISOString().split('T')[0]
       }
       finalUser.myClassId = initialClass.id
     }
@@ -1596,6 +1645,211 @@ function FirstTimeOnboardingModal({ isOpen, onClose, user, onSaveOnboarding }) {
           >
             설정 완료하고 ClassTuning 시작하기 🚀
           </button>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+// 교사용 새 학급(클래스) 개설 모달
+function CreateClassModal({ isOpen, onClose, onCreateClass, teacherName }) {
+  const [grade, setGrade] = useState('1')
+  const [classNum, setClassNum] = useState('4')
+  const [subject, setSubject] = useState('수학')
+  const [className, setClassName] = useState('1학년 4반 수학')
+  const [classCode, setClassCode] = useState('MATH104')
+  const [description, setDescription] = useState('서울외고 1학년 4반 수학 Q&A 및 피드백 학급')
+
+  // 학년/반/과목 변경 시 기본 이름과 코드 자동 동기화
+  const handleGradeChange = (g) => {
+    setGrade(g)
+    const codeNum = `${g}${classNum.padStart(2, '0')}`
+    setClassName(`${g}학년 ${classNum}반 ${subject}`)
+    setClassCode(`MATH${codeNum}`)
+    setDescription(`서울외고 ${g}학년 ${classNum}반 ${subject} Q&A 및 피드백 학급`)
+  }
+
+  const handleClassNumChange = (c) => {
+    setClassNum(c)
+    const codeNum = `${grade}${c.padStart(2, '0')}`
+    setClassName(`${grade}학년 ${c}반 ${subject}`)
+    setClassCode(`MATH${codeNum}`)
+    setDescription(`서울외고 ${grade}학년 ${c}반 ${subject} Q&A 및 피드백 학급`)
+  }
+
+  const handleSubjectChange = (s) => {
+    setSubject(s)
+    setClassName(`${grade}학년 ${classNum}반 ${s}`)
+    setDescription(`서울외고 ${grade}학년 ${classNum}반 ${s} Q&A 및 피드백 학급`)
+  }
+
+  if (!isOpen) return null
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (!className.trim()) {
+      alert('클래스 이름을 입력해 주세요.')
+      return
+    }
+
+    const newClass = {
+      id: 'c_' + Date.now(),
+      name: className.trim(),
+      grade,
+      classNum,
+      subject,
+      code: classCode.trim() || `MATH${grade}${classNum.padStart(2, '0')}`,
+      teacherName: teacherName || '교사 관리자',
+      description: description.trim() || '수학 Q&A 학급',
+      studentCount: 0,
+      createdAt: new Date().toISOString().split('T')[0]
+    }
+
+    onCreateClass(newClass)
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md">
+      <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border-2 border-indigo-400 space-y-4 text-left relative max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between border-b pb-3">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-10 h-10 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-md">
+              🏫
+            </div>
+            <div>
+              <h3 className="text-base font-extrabold text-slate-900">새로운 학급(클래스) 개설</h3>
+              <p className="text-xs text-slate-500">교사 전용 학급 개설 & 학생 학번 자동 배정 연동</p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            type="button"
+            className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-all"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+          {/* 학년 선택 */}
+          <div>
+            <label className="block font-bold text-slate-700 mb-1">학년 선택</label>
+            <div className="grid grid-cols-3 gap-2">
+              {['1', '2', '3'].map((g) => (
+                <button
+                  key={g}
+                  type="button"
+                  onClick={() => handleGradeChange(g)}
+                  className={`py-2 rounded-xl font-bold transition-all ${
+                    grade === g
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  {g}학년
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 학급(반) 선택 */}
+          <div>
+            <label className="block font-bold text-slate-700 mb-1">학급(반) 선택 (1~12반)</label>
+            <div className="grid grid-cols-6 gap-1.5">
+              {Array.from({ length: 12 }, (_, i) => String(i + 1)).map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => handleClassNumChange(c)}
+                  className={`py-1.5 rounded-lg font-bold text-xs transition-all ${
+                    classNum === c
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  {c}반
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 교과목 선택 */}
+          <div>
+            <label className="block font-bold text-slate-700 mb-1">교과목</label>
+            <div className="grid grid-cols-4 gap-1.5">
+              {['수학', '수학 I', '수학 II', '미적분'].map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => handleSubjectChange(s)}
+                  className={`py-1.5 rounded-lg font-bold text-xs transition-all ${
+                    subject === s
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 클래스명 (자동 생성 + 직접 수정 가능) */}
+          <div>
+            <label className="block font-bold text-slate-700 mb-1">클래스 표시 이름</label>
+            <input
+              type="text"
+              value={className}
+              onChange={(e) => setClassName(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold text-xs focus:ring-2 focus:ring-indigo-500"
+              placeholder="예: 1학년 4반 수학"
+              required
+            />
+          </div>
+
+          {/* 학급 식별 코드 */}
+          <div>
+            <label className="block font-bold text-slate-700 mb-1">학급 식별 코드</label>
+            <input
+              type="text"
+              value={classCode}
+              onChange={(e) => setClassCode(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl border border-slate-300 font-mono font-bold text-xs focus:ring-2 focus:ring-indigo-500"
+              placeholder="예: MATH104"
+              required
+            />
+            <p className="text-[10px] text-slate-400 mt-1">
+              * 학생 학번(예: 104xx) 입력 시 이 학급으로 자동 매칭 및 반배정됩니다.
+            </p>
+          </div>
+
+          {/* 학급 소개 */}
+          <div>
+            <label className="block font-bold text-slate-700 mb-1">학급 안내 및 공지</label>
+            <textarea
+              rows={2}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500"
+              placeholder="학급 소개 및 학생들에게 전할 안내 메시지"
+            />
+          </div>
+
+          <div className="flex gap-2 pt-2 border-t">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-all"
+            >
+              취소
+            </button>
+            <button
+              type="submit"
+              className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5"
+            >
+              <span>🏫 클래스 개설 완료</span>
+            </button>
+          </div>
         </form>
       </div>
     </div>
@@ -2201,6 +2455,73 @@ function MainDashboard({ user, classes, questions, onAddQuestion, onAddAnswer, o
   )
 }
 
+const DEFAULT_CLASSES = [
+  {
+    id: 'c_101',
+    name: '1학년 1반 수학',
+    grade: '1',
+    classNum: '1',
+    subject: '수학',
+    code: 'MATH101',
+    teacherName: '교사 관리자',
+    description: '서울외고 1학년 1반 수학 Q&A 및 피드백 학급',
+    studentCount: 24,
+    createdAt: '2026-03-01'
+  },
+  {
+    id: 'c_102',
+    name: '1학년 2반 수학',
+    grade: '1',
+    classNum: '2',
+    subject: '수학',
+    code: 'MATH102',
+    teacherName: '교사 관리자',
+    description: '서울외고 1학년 2반 수학 Q&A 및 피드백 학급',
+    studentCount: 25,
+    createdAt: '2026-03-01'
+  },
+  {
+    id: 'c_103',
+    name: '1학년 3반 수학',
+    grade: '1',
+    classNum: '3',
+    subject: '수학',
+    code: 'MATH103',
+    teacherName: '교사 관리자',
+    description: '서울외고 1학년 3반 수학 Q&A 및 피드백 학급',
+    studentCount: 26,
+    createdAt: '2026-03-01'
+  }
+]
+
+const DEFAULT_QUESTIONS = [
+  {
+    id: 1,
+    classId: 'c_103',
+    className: '1학년 3반 수학',
+    category: '일반질문',
+    authorName: '김** (10312)',
+    authorRole: 'student',
+    title: '유리함수 점근선 $x=a$, $y=b$ 구하는 공식 질문입니다!',
+    content: '함수 $f(x) = \\frac{2x+3}{x-1}$ 에서 점근선의 방정식과 대칭점 좌표를 쉽게 구하는 요령이 궁금해요!',
+    imageUrl: null,
+    likes: 4,
+    createdAt: '2026-03-05 10:20',
+    hasAdopted: true,
+    answers: [
+      {
+        id: 101,
+        authorName: '이** (10305)',
+        authorRole: 'student',
+        content: '분모가 0이 되는 $x=1$이 세로 점근선이고, 최고차항 계수 비인 $\\frac{2}{1} = 2$가 가로 점근선 $y=2$가 됩니다! 대칭점은 바로 점근선의 교점인 $(1, 2)$예요.',
+        imageUrl: null,
+        isAdopted: true,
+        createdAt: '2026-03-05 10:25'
+      }
+    ]
+  }
+]
+
 // App 메인 컴포넌트
 export default function App() {
   const [activeTab, setActiveTab] = useState('qa')
@@ -2214,7 +2535,7 @@ export default function App() {
       email: 'ygywam5202@sfl.sen.hs.kr',
       nickname: '교사 관리자',
       role: 'teacher',
-      myClassId: '',
+      myClassId: 'c_103',
       xp: 0,
       isStarTutor: false,
       activePetId: 'tiger',
@@ -2235,11 +2556,28 @@ export default function App() {
 
   const [classes, setClasses] = useState(() => {
     const saved = localStorage.getItem('CLASS_TUNING_CLASSES')
-    return saved ? JSON.parse(saved) : []
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed
+      } catch (e) {}
+    }
+    return DEFAULT_CLASSES
   })
-  const [questions, setQuestions] = useState([])
+  const [questions, setQuestions] = useState(() => {
+    const saved = localStorage.getItem('CLASS_TUNING_QUESTIONS')
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed
+      } catch (e) {}
+    }
+    return DEFAULT_QUESTIONS
+  })
 
-  // 🛡️ Supabase Real OAuth 로그인 감지 및 계정 권한 동기화
+  const [supabaseClient, setSupabaseClient] = useState(null)
+
+  // 🛡️ Supabase Real OAuth 로그인 감지 & 실시간 중앙 DB (classes, questions) 연동
   useEffect(() => {
     let url = (window.CLASS_TUNING_CONFIG && window.CLASS_TUNING_CONFIG.supabaseUrl) || localStorage.getItem('CLASS_TUNING_SUPABASE_URL') || ''
     let key = (window.CLASS_TUNING_CONFIG && window.CLASS_TUNING_CONFIG.supabaseKey) || localStorage.getItem('CLASS_TUNING_SUPABASE_KEY') || ''
@@ -2247,7 +2585,50 @@ export default function App() {
     if (window.supabase && url && key && url.startsWith('http')) {
       try {
         const client = window.supabase.createClient(url, key)
+        setSupabaseClient(client)
 
+        // 1. 중앙 DB에서 클래스 목록 실시간 동기화
+        const loadClasses = async () => {
+          try {
+            const { data, error } = await client.from('classes').select('*').order('created_at', { ascending: false })
+            if (!error && data && data.length > 0) {
+              setClasses(data)
+              localStorage.setItem('CLASS_TUNING_CLASSES', JSON.stringify(data))
+            }
+          } catch(e) {
+            console.warn('DB classes load error:', e)
+          }
+        }
+        loadClasses()
+
+        // 2. 중앙 DB에서 질문 및 답변 목록 실시간 동기화
+        const loadQuestions = async () => {
+          try {
+            const { data, error } = await client.from('questions').select('*, answers(*)').order('created_at', { ascending: false })
+            if (!error && data && data.length > 0) {
+              setQuestions(data)
+              localStorage.setItem('CLASS_TUNING_QUESTIONS', JSON.stringify(data))
+            }
+          } catch(e) {
+            console.warn('DB questions load error:', e)
+          }
+        }
+        loadQuestions()
+
+        // 3. 실시간 변경사항 웹소켓 수신 (다른 사용자가 작성한 클래스/질문/답변 즉시 반영)
+        const channel = client.channel('public:classtuning_realtime')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'classes' }, () => {
+            loadClasses()
+          })
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'questions' }, () => {
+            loadQuestions()
+          })
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'answers' }, () => {
+            loadQuestions()
+          })
+          .subscribe()
+
+        // 4. 서울외고 구글 로그인 상태 감지
         const applyAuthUser = (authUser) => {
           if (!authUser) return
           const email = (authUser.email || '').toLowerCase()
@@ -2268,7 +2649,7 @@ export default function App() {
               email: email,
               nickname: isTeacher ? `${googleName} 선생님 (교사)` : googleName,
               role: isTeacher ? 'teacher' : 'student',
-              myClassId: '',
+              myClassId: 'c_103',
               xp: 0,
               isStarTutor: false,
               activePetId: 'tiger',
@@ -2294,14 +2675,17 @@ export default function App() {
           }
         })
 
-        return () => subscription?.unsubscribe()
+        return () => {
+          subscription?.unsubscribe()
+          channel?.unsubscribe()
+        }
       } catch (e) {
-        console.warn('Supabase auth listener error:', e)
+        console.warn('Supabase DB/Auth sync error:', e)
       }
     }
   }, [])
 
-  const handleSaveOnboarding = (updatedUser, initialClass, chosenPet) => {
+  const handleSaveOnboarding = async (updatedUser, initialClass, chosenPet) => {
     setUser(updatedUser)
     localStorage.setItem('CLASS_TUNING_ACTIVE_USER', JSON.stringify(updatedUser))
 
@@ -2311,6 +2695,25 @@ export default function App() {
         localStorage.setItem('CLASS_TUNING_CLASSES', JSON.stringify(next))
         return next
       })
+
+      // Supabase 중앙 DB에 초기 클래스 영구 저장
+      if (supabaseClient) {
+        try {
+          await supabaseClient.from('classes').insert([
+            {
+              id: initialClass.id,
+              name: initialClass.name,
+              code: initialClass.code,
+              creator_name: initialClass.teacherName || '교사',
+              creator_role: 'teacher',
+              description: initialClass.description,
+              student_count: 1
+            }
+          ])
+        } catch (err) {
+          console.warn('초기 클래스 DB 저장 실패:', err)
+        }
+      }
     }
 
     if (chosenPet) {
@@ -2383,30 +2786,111 @@ export default function App() {
     setShowcases(prev => [newSc, ...prev])
   }
 
-  const handleCreateClass = (newClass) => {
-    setClasses((prev) => [newClass, ...prev])
-    alert(`[${newClass.name}] 클래스가 개설되었습니다! QR코드로 학생들을 부르세요.`)
+  const handleCreateClass = async (newClass) => {
+    // 1. 낙관적 UI 즉시 반영 & 로컬 캐시
+    setClasses((prev) => {
+      const next = [newClass, ...prev.filter(c => c.id !== newClass.id)]
+      localStorage.setItem('CLASS_TUNING_CLASSES', JSON.stringify(next))
+      return next
+    })
+    setUser((prev) => {
+      if (!prev) return prev
+      const updated = { ...prev, myClassId: newClass.id }
+      localStorage.setItem('CLASS_TUNING_ACTIVE_USER', JSON.stringify(updated))
+      return updated
+    })
+    setIsCreateClassOpen(false)
+
+    // 2. Supabase 중앙 DB 영구 저장 (모든 학생/교사 기기에 실시간 공유)
+    if (supabaseClient) {
+      try {
+        const { error } = await supabaseClient.from('classes').insert([
+          {
+            id: newClass.id,
+            name: newClass.name,
+            code: newClass.code,
+            creator_name: newClass.teacherName || '교사 관리자',
+            creator_role: 'teacher',
+            description: newClass.description,
+            student_count: 0
+          }
+        ])
+        if (error) console.warn('Supabase class insert error:', error.message)
+      } catch (err) {
+        console.warn('DB 클래스 저장 실패:', err)
+      }
+    }
+
+    alert(`🎉 [${newClass.name}] 클래스가 성공적으로 개설되었습니다!\n${supabaseClient ? '중앙 DB에 저장되어 모든 학생/교사 기기에 실시간 동기화됩니다.' : '현재 DB 미연동 상태입니다. [DB 설정] 완료 시 전교생에게 실시간 동기화됩니다.'}`)
   }
 
-  const handleAddQuestion = (newQ) => {
-    setQuestions((prev) => [newQ, ...prev])
+  const handleAddQuestion = async (newQ) => {
+    setQuestions((prev) => {
+      const next = [newQ, ...prev]
+      localStorage.setItem('CLASS_TUNING_QUESTIONS', JSON.stringify(next))
+      return next
+    })
     setUser((prev) => ({ ...prev, xp: prev.xp + 30 }))
+
+    // Supabase 중앙 DB 영구 저장 (전교생 질문 피드에 실시간 공유)
+    if (supabaseClient) {
+      try {
+        const { error } = await supabaseClient.from('questions').insert([
+          {
+            class_id: newQ.classId,
+            class_name: newQ.className,
+            category: newQ.category,
+            author_id: user?.id || null,
+            author_name: newQ.authorName,
+            title: newQ.title,
+            content: newQ.content,
+            image_url: newQ.imageUrl
+          }
+        ])
+        if (error) console.warn('Supabase question insert error:', error.message)
+      } catch (err) {
+        console.warn('DB 질문 저장 실패:', err)
+      }
+    }
   }
 
-  const handleAddAnswer = (qId, newAns, xpGained, xpNotice) => {
-    setQuestions((prev) =>
-      prev.map((q) => (q.id === qId ? { ...q, answers: [...q.answers, newAns] } : q))
-    )
+  const handleAddAnswer = async (qId, newAns, xpGained, xpNotice) => {
+    setQuestions((prev) => {
+      const next = prev.map((q) => (q.id === qId ? { ...q, answers: [...q.answers, newAns] } : q))
+      localStorage.setItem('CLASS_TUNING_QUESTIONS', JSON.stringify(next))
+      return next
+    })
 
     if (xpGained > 0) {
       setUser((prev) => ({ ...prev, xp: prev.xp + xpGained }))
     }
+
+    // Supabase 중앙 DB 영구 저장 (전교생 답변 피드에 실시간 공유)
+    if (supabaseClient) {
+      try {
+        const { error } = await supabaseClient.from('answers').insert([
+          {
+            question_id: qId,
+            author_id: user?.id || null,
+            author_name: newAns.authorName,
+            content: newAns.content,
+            image_url: newAns.imageUrl,
+            likes: 0,
+            is_adopted: false
+          }
+        ])
+        if (error) console.warn('Supabase answer insert error:', error.message)
+      } catch (err) {
+        console.warn('DB 답변 저장 실패:', err)
+      }
+    }
+
     alert(`[답변 등록 완료!]\n${xpNotice}`)
   }
 
-  const handleAdoptAnswer = (qId, ansId, ansAuthorName) => {
-    setQuestions((prev) =>
-      prev.map((q) => {
+  const handleAdoptAnswer = async (qId, ansId, ansAuthorName) => {
+    setQuestions((prev) => {
+      const next = prev.map((q) => {
         if (q.id === qId) {
           return {
             ...q,
@@ -2416,12 +2900,25 @@ export default function App() {
         }
         return q
       })
-    )
+      localStorage.setItem('CLASS_TUNING_QUESTIONS', JSON.stringify(next))
+      return next
+    })
 
     setUser((prev) => ({
       ...prev,
       xp: prev.xp + 100
     }))
+
+    // Supabase 중앙 DB 업데이트
+    if (supabaseClient) {
+      try {
+        await supabaseClient.from('questions').update({ has_adopted: true }).eq('id', qId)
+        await supabaseClient.from('answers').update({ is_adopted: true }).eq('id', ansId)
+      } catch (err) {
+        console.warn('DB 답변 채택 업데이트 실패:', err)
+      }
+    }
+
     alert(`🎉 [답변 채택 완료!]\n해당 답변 작성자(${ansAuthorName})에게 채택 보상 +100 XP가 추가 지급되었습니다!`)
   }
 
@@ -2539,6 +3036,13 @@ export default function App() {
         ClassTuning P2P Platform &copy; 2026 | 서울외고 학급 P2P 질의응답 & 학습 펫 파트너
       </footer>
 
+      <CreateClassModal
+        isOpen={isCreateClassOpen}
+        onClose={() => setIsCreateClassOpen(false)}
+        onCreateClass={handleCreateClass}
+        teacherName={user?.nickname}
+      />
+
       <SupabaseConfigModal
         isOpen={isSupabaseModalOpen}
         onClose={() => setIsSupabaseModalOpen(false)}
@@ -2548,6 +3052,7 @@ export default function App() {
         isOpen={isOnboardingOpen}
         onClose={() => setIsOnboardingOpen(false)}
         user={user}
+        classes={classes}
         onSaveOnboarding={handleSaveOnboarding}
       />
     </div>
