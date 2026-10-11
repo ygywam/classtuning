@@ -14,13 +14,13 @@ import {
   Award
 } from 'lucide-react'
 
-// 10종 스타터 동물 데이터베이스 (준비 완료: 호랑이, 고양이, 코알라 / 준비 중: 그 외 동물)
+// 10종 스타터 동물 데이터베이스 (준비 완료: 호랑이, 고양이, 코알라, 드래곤 / 준비 중: 그 외 동물)
 const STARTER_PETS = [
   { id: 'tiger', name: '호랑이 🐯', icon: '🐯', desc: '용맹하고 지혜로운 수학 호랑이', isReady: true },
   { id: 'cat', name: '샤인 고양이 🐱', icon: '🐱', desc: '영리하고 신속한 피드백 냥이', isReady: true },
   { id: 'koala', name: '잠만보 코알라 🐨', icon: '🐨', desc: '집중력이 뛰어난 포근 코알라', isReady: true },
-  { id: 'dino', name: '티라노 🦖', icon: '🦖', desc: '강력한 모의고사 킬러 공룡', isReady: false },
-  { id: 'dragon', name: '전설 드래곤 🐉', icon: '🐉', desc: '만점을 상징하는 용', isReady: false },
+  { id: 'dragon', name: '전설 드래곤 🐉', icon: '🐉', desc: '만점을 상징하는 용', isReady: true },
+  { id: 'dino', name: '티라노 🦖', icon: '🦖', desc: '강력한 모의고사 킬러 공룡', isReady: true },
   { id: 'dog', name: '시바 강사 🐶', icon: '🐶', desc: '충직하고 친절한 공부 멍멍이', isReady: false },
   { id: 'deer', name: '꽃사슴 🦌', icon: '🦌', desc: '섬세하고 우아한 개념 사슴', isReady: false },
   { id: 'giraffe', name: '키다리 기린 🦒', icon: '🦒', desc: '멀리 내다보는 수식 기린', isReady: false },
@@ -78,8 +78,20 @@ function PetAvatar({ petId, stageLevel = 1, fallbackIcon, className = "w-14 h-14
       4: '/assets/3d_koala_scholar.jpg',
       5: '/assets/3d_koala_master.jpg'
     },
-    dino: '/assets/3d_dino.jpg',
-    dragon: '/assets/3d_dragon.jpg'
+    dragon: {
+      1: '/assets/3d_egg.jpg',
+      2: '/assets/3d_dragon_baby.jpg',
+      3: '/assets/3d_dragon_child.jpg',
+      4: '/assets/3d_dragon_scholar.jpg',
+      5: '/assets/3d_dragon_master.jpg'
+    },
+    dino: {
+      1: '/assets/3d_egg.jpg',
+      2: '/assets/3d_dino_baby.jpg',
+      3: '/assets/3d_dino_child.jpg',
+      4: '/assets/3d_dino_scholar.jpg',
+      5: '/assets/3d_dino_master.jpg'
+    }
   }
 
   let imgSrc = null
@@ -1529,7 +1541,7 @@ function FirstTimeOnboardingModal({ isOpen, onClose, user, onSaveOnboarding }) {
             <label className="block font-bold text-slate-700 mb-1.5 flex items-center justify-between">
               <span>🥚 1호 펫 알 수령 & 성장 목표 동물 선택 (0 XP 시작)</span>
               <span className="text-[10px] text-indigo-600 font-extrabold bg-indigo-50 px-2 py-0.5 rounded-full">
-                현재 3D 완료: 호랑이 · 고양이 · 코알라
+                현재 3D 완료: 호랑이 · 고양이 · 코알라 · 드래곤 · 공룡
               </span>
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -1541,7 +1553,7 @@ function FirstTimeOnboardingModal({ isOpen, onClose, user, onSaveOnboarding }) {
                     key={pet.id}
                     onClick={() => {
                       if (!isReady) {
-                        alert(`⚠️ [${pet.name}]은(는) 현재 3D 입체 그래픽 준비 중입니다.\n현재 부화 가능한 동물: 호랑이 🐯, 고양이 🐱, 코알라 🐨`)
+                        alert(`⚠️ [${pet.name}]은(는) 현재 3D 입체 그래픽 준비 중입니다.\n현재 부화 가능한 동물: 호랑이 🐯, 고양이 🐱, 코알라 🐨, 드래곤 🐉, 공룡 🦖`)
                         return
                       }
                       setSelectedPetId(pet.id)
