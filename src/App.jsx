@@ -31,10 +31,10 @@ const STARTER_PETS = [
   { id: 'dragon', name: '전설 드래곤 🐉', icon: '🐉', desc: '만점을 상징하는 용', isReady: true },
   { id: 'dino', name: '티라노 🦖', icon: '🦖', desc: '강력한 모의고사 킬러 공룡', isReady: true },
   { id: 'dog', name: '시바 강사 🐶', icon: '🐶', desc: '충직하고 친절한 공부 멍멍이', isReady: true },
-  { id: 'deer', name: '꽃사슴 🦌', icon: '🦌', desc: '섬세하고 우아한 개념 사슴', isReady: false },
-  { id: 'giraffe', name: '키다리 기린 🦒', icon: '🦒', desc: '멀리 내다보는 수식 기린', isReady: false },
-  { id: 'hippo', name: '포동 하마 🦛', icon: '🦛', desc: '든든하고 푸근한 기출 하마', isReady: false },
-  { id: 'penguin', name: '황제 펭귄 🐧', icon: '🐧', desc: '차가운 이성의 논리 펭귄', isReady: false }
+  { id: 'deer', name: '꽃사슴 🦌', icon: '🦌', desc: '섬세하고 우아한 개념 사슴', isReady: true },
+  { id: 'giraffe', name: '키다리 기린 🦒', icon: '🦒', desc: '멀리 내다보는 수식 기린', isReady: true },
+  { id: 'hippo', name: '포동 하마 🦛', icon: '🦛', desc: '든든하고 푸근한 기출 하마 (순차 공개)', isReady: false },
+  { id: 'penguin', name: '황제 펭귄 🐧', icon: '🐧', desc: '차가운 이성의 논리 펭귄 (순차 공개)', isReady: false }
 ]
 
 // 학습 펫 경험치 레벨 및 5단계 진화 시스템
@@ -107,6 +107,27 @@ function PetAvatar({ petId, stageLevel = 1, fallbackIcon, className = "w-14 h-14
       3: '/assets/3d_dog_child.jpg',
       4: '/assets/3d_dog_scholar.jpg',
       5: '/assets/3d_dog_master.jpg'
+    },
+    deer: {
+      1: '/assets/3d_egg.jpg',
+      2: '/assets/3d_deer_baby.jpg',
+      3: '/assets/3d_deer_child.jpg',
+      4: '/assets/3d_deer_scholar.jpg',
+      5: '/assets/3d_deer_master.jpg'
+    },
+    giraffe: {
+      1: '/assets/3d_egg.jpg',
+      2: '/assets/3d_giraffe_baby.jpg',
+      3: '/assets/3d_giraffe_child.jpg',
+      4: '/assets/3d_giraffe_scholar.jpg',
+      5: '/assets/3d_giraffe_master.jpg'
+    },
+    hippo: {
+      1: '/assets/3d_egg.jpg',
+      2: '/assets/3d_hippo_baby.jpg',
+      3: '/assets/3d_hippo_child.jpg',
+      4: '/assets/3d_hippo_child.jpg',
+      5: '/assets/3d_hippo_child.jpg'
     }
   }
 
@@ -315,13 +336,14 @@ function Header({ user, activeTab, setActiveTab, onGoogleLogin, onLogout, onOpen
               activeTab === 'qa' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            🌐 Q&A 피드백
+            🌐 Q&A 피드
           </button>
           <button
             onClick={() => setActiveTab('assignments')}
             className={`px-2.5 sm:px-3 py-1.5 text-[11px] sm:text-xs font-bold rounded-xl transition-all flex items-center gap-1 whitespace-nowrap shrink-0 ${
               activeTab === 'assignments' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
             }`}
+            title="교사가 출제한 과제만 모아보기"
           >
             <span>📝 과제방</span>
           </button>
@@ -1875,29 +1897,27 @@ function ClassRosterModal({ isOpen, onClose, classes = [], classMembers = [], on
   )
 }
 
-// 교사용 새 학급(클래스) 개설 모달
+// 교사용 새 학급(클래스) 개설 모달 (2022 개정 교육과정 과목 & 1~10반 & 학급식별코드 제거)
 function CreateClassModal({ isOpen, onClose, onCreateClass, teacherName }) {
+  const SUBJECTS_2022 = ['공통수학', '대수', '미적분1', '미적분2', '확률과통계']
   const [grade, setGrade] = useState('1')
   const [classNum, setClassNum] = useState('4')
-  const [subject, setSubject] = useState('수학')
-  const [className, setClassName] = useState('1학년 4반 수학')
-  const [classCode, setClassCode] = useState('MATH104')
-  const [description, setDescription] = useState('서울외고 1학년 4반 수학 Q&A 및 피드백 학급')
+  const [subject, setSubject] = useState('공통수학')
+  const [className, setClassName] = useState('1학년 4반 공통수학')
+  const [description, setDescription] = useState('서울외고 1학년 4반 공통수학 Q&A 및 피드백 학급')
 
-  // 학년/반/과목 변경 시 기본 이름과 코드 자동 동기화
+  // 학년/반/과목 변경 시 기본 이름 자동 동기화
   const handleGradeChange = (g) => {
     setGrade(g)
-    const codeNum = `${g}${classNum.padStart(2, '0')}`
-    setClassName(`${g}학년 ${classNum}반 ${subject}`)
-    setClassCode(`MATH${codeNum}`)
-    setDescription(`서울외고 ${g}학년 ${classNum}반 ${subject} Q&A 및 피드백 학급`)
+    const defaultSub = g === '1' ? '공통수학' : '대수'
+    setSubject(defaultSub)
+    setClassName(`${g}학년 ${classNum}반 ${defaultSub}`)
+    setDescription(`서울외고 ${g}학년 ${classNum}반 ${defaultSub} Q&A 및 피드백 학급`)
   }
 
   const handleClassNumChange = (c) => {
     setClassNum(c)
-    const codeNum = `${grade}${c.padStart(2, '0')}`
     setClassName(`${grade}학년 ${c}반 ${subject}`)
-    setClassCode(`MATH${codeNum}`)
     setDescription(`서울외고 ${grade}학년 ${c}반 ${subject} Q&A 및 피드백 학급`)
   }
 
@@ -1922,9 +1942,9 @@ function CreateClassModal({ isOpen, onClose, onCreateClass, teacherName }) {
       grade,
       classNum,
       subject,
-      code: classCode.trim() || `MATH${grade}${classNum.padStart(2, '0')}`,
+      code: `MATH${grade}${classNum.padStart(2, '0')}`,
       teacherName: teacherName || '교사 관리자',
-      description: description.trim() || '수학 Q&A 학급',
+      description: description.trim() || `${className} Q&A 및 과제 학급`,
       studentCount: 0,
       createdAt: new Date().toISOString().split('T')[0]
     }
@@ -1942,7 +1962,7 @@ function CreateClassModal({ isOpen, onClose, onCreateClass, teacherName }) {
             </div>
             <div>
               <h3 className="text-base font-extrabold text-slate-900">새로운 학급(클래스) 개설</h3>
-              <p className="text-xs text-slate-500">교사 전용 학급 개설 & 학생 학번 자동 배정 연동</p>
+              <p className="text-xs text-slate-500">교사 전용 학급 개설 (학생 학번 자동 매칭)</p>
             </div>
           </div>
           <button
@@ -1976,16 +1996,16 @@ function CreateClassModal({ isOpen, onClose, onCreateClass, teacherName }) {
             </div>
           </div>
 
-          {/* 학급(반) 선택 */}
+          {/* 학급(반) 선택 (1~10반) */}
           <div>
-            <label className="block font-bold text-slate-700 mb-1">학급(반) 선택 (1~12반)</label>
-            <div className="grid grid-cols-6 gap-1.5">
-              {Array.from({ length: 12 }, (_, i) => String(i + 1)).map((c) => (
+            <label className="block font-bold text-slate-700 mb-1">학급(반) 선택 (1~10반)</label>
+            <div className="grid grid-cols-5 gap-1.5">
+              {Array.from({ length: 10 }, (_, i) => String(i + 1)).map((c) => (
                 <button
                   key={c}
                   type="button"
                   onClick={() => handleClassNumChange(c)}
-                  className={`py-1.5 rounded-lg font-bold text-xs transition-all ${
+                  className={`py-2 rounded-xl font-bold text-xs transition-all ${
                     classNum === c
                       ? 'bg-indigo-600 text-white shadow-sm'
                       : 'bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100'
@@ -1997,16 +2017,19 @@ function CreateClassModal({ isOpen, onClose, onCreateClass, teacherName }) {
             </div>
           </div>
 
-          {/* 교과목 선택 */}
+          {/* 2022 개정 교육과정 교과목 선택 */}
           <div>
-            <label className="block font-bold text-slate-700 mb-1">교과목</label>
-            <div className="grid grid-cols-4 gap-1.5">
-              {['수학', '수학 I', '수학 II', '미적분'].map((s) => (
+            <div className="flex items-center justify-between mb-1">
+              <label className="block font-bold text-slate-700">교과목 (2022 개정 교육과정)</label>
+              <span className="text-[10px] text-indigo-600 font-bold">공통수학 · 대수 · 미적분1·2 · 확통</span>
+            </div>
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
+              {SUBJECTS_2022.map((s) => (
                 <button
                   key={s}
                   type="button"
                   onClick={() => handleSubjectChange(s)}
-                  className={`py-1.5 rounded-lg font-bold text-xs transition-all ${
+                  className={`py-2 px-1 rounded-xl font-bold text-xs transition-all whitespace-nowrap text-center ${
                     subject === s
                       ? 'bg-indigo-600 text-white shadow-sm'
                       : 'bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100'
@@ -2026,28 +2049,12 @@ function CreateClassModal({ isOpen, onClose, onCreateClass, teacherName }) {
               value={className}
               onChange={(e) => setClassName(e.target.value)}
               className="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold text-xs focus:ring-2 focus:ring-indigo-500"
-              placeholder="예: 1학년 4반 수학"
+              placeholder="예: 1학년 4반 공통수학"
               required
             />
           </div>
 
-          {/* 학급 식별 코드 */}
-          <div>
-            <label className="block font-bold text-slate-700 mb-1">학급 식별 코드</label>
-            <input
-              type="text"
-              value={classCode}
-              onChange={(e) => setClassCode(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-300 font-mono font-bold text-xs focus:ring-2 focus:ring-indigo-500"
-              placeholder="예: MATH104"
-              required
-            />
-            <p className="text-[10px] text-slate-400 mt-1">
-              * 학생 학번(예: 104xx) 입력 시 이 학급으로 자동 매칭 및 반배정됩니다.
-            </p>
-          </div>
-
-          {/* 학급 소개 */}
+          {/* 학급 소개 및 안내 */}
           <div>
             <label className="block font-bold text-slate-700 mb-1">학급 안내 및 공지</label>
             <textarea
@@ -2180,12 +2187,14 @@ function SupabaseConfigModal({ isOpen, onClose }) {
   )
 }
 
-// 메인 Q&A 대시보드
+// 메인 Q&A 및 과제 통합 대시보드
 function MainDashboard({
   user,
   classes,
   questions,
   classMembers = [],
+  assignments = [],
+  submissions = [],
   onAddQuestion,
   onAddAnswer,
   onAdoptAnswer,
@@ -2193,9 +2202,14 @@ function MainDashboard({
   onDeleteQuestion,
   onDeleteAnswer,
   onOpenRoster,
-  onGoToGuide
+  onGoToGuide,
+  onOpenCreateAssignment,
+  onOpenSubmitModal,
+  onOpenGradingModal,
+  onDeleteAssignment
 }) {
   const [selectedClassId, setSelectedClassId] = useState('all')
+  const [expandedAssignmentSubId, setExpandedAssignmentSubId] = useState(null)
   const [questionTitle, setQuestionTitle] = useState('')
   const [questionContent, setQuestionContent] = useState('')
   const [qImage, setQImage] = useState(null)
@@ -2358,6 +2372,10 @@ function MainDashboard({
   const filteredQuestions = selectedClassId === 'all'
     ? questions
     : questions.filter(q => q.classId === selectedClassId)
+
+  const filteredAssignments = selectedClassId === 'all'
+    ? assignments
+    : assignments.filter(asg => asg.classId === selectedClassId)
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -2552,10 +2570,23 @@ function MainDashboard({
         </div>
 
         <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4">
-          <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-            <span>✏️ 새 질문 등록하기</span>
-            <span className="text-xs text-indigo-600 font-bold">(커서 위치 수식 즉시 삽입 & 작성 시 +30 XP!)</span>
-          </h2>
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-3">
+            <h2 className="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2">
+              <span>✏️ 새 질문 등록하기</span>
+              <span className="text-xs text-indigo-600 font-bold">(수식 즉시 삽입 & 작성 시 +30 XP!)</span>
+            </h2>
+
+            {isTeacher && onOpenCreateAssignment && (
+              <button
+                type="button"
+                onClick={() => onOpenCreateAssignment()}
+                className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs rounded-xl shadow-md shadow-indigo-200 transition-all flex items-center gap-1.5"
+              >
+                <PlusCircle className="w-3.5 h-3.5" />
+                <span>+ 학생들에게 과제 부여하기</span>
+              </button>
+            )}
+          </div>
 
           <form onSubmit={handleQuestionSubmit} className="space-y-4">
             <div className="flex flex-wrap gap-3">
@@ -2636,6 +2667,246 @@ function MainDashboard({
               </button>
             </div>
           </form>
+        </div>
+
+        {/* 📌 교사 공식 과제 통합 피드 섹션 */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <h3 className="font-extrabold text-slate-800 text-base flex items-center gap-1.5">
+                <span>📌 선생님 공식 과제</span>
+                <span className="text-xs text-indigo-600 font-bold">({filteredAssignments.length}건)</span>
+              </h3>
+              <span className="hidden sm:inline-block px-2.5 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-black rounded-full border border-emerald-300">
+                🔒 100% 블라인드 비밀 제출
+              </span>
+            </div>
+
+            {isTeacher && onOpenCreateAssignment && (
+              <button
+                type="button"
+                onClick={() => onOpenCreateAssignment()}
+                className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs rounded-xl border border-indigo-200 transition-all flex items-center gap-1"
+              >
+                <PlusCircle className="w-3.5 h-3.5" />
+                <span>과제 출제</span>
+              </button>
+            )}
+          </div>
+
+          {filteredAssignments.length === 0 ? (
+            <div className="bg-white rounded-3xl p-5 border border-slate-200 text-center text-xs text-slate-400">
+              현재 등록된 과제가 없습니다. {isTeacher && '우측 상단의 [과제 출제] 버튼으로 과제를 남겨보세요!'}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4">
+              {filteredAssignments.map((asg) => {
+                const mySub = !isTeacher && user
+                  ? submissions.find(
+                      (s) =>
+                        s.assignmentId === asg.id &&
+                        (s.studentEmail === user.email || (user.studentId && s.studentId === user.studentId))
+                    )
+                  : null
+
+                const asgSubs = submissions.filter((s) => s.assignmentId === asg.id)
+                const pendingCount = asgSubs.filter((s) => s.status === 'pending').length
+                const isExpanded = expandedAssignmentSubId === asg.id
+
+                return (
+                  <div
+                    key={asg.id}
+                    className="bg-white rounded-3xl p-5 sm:p-6 shadow-sm border-2 border-indigo-100 hover:border-indigo-300 transition-all space-y-3.5 relative overflow-hidden"
+                  >
+                    <div className="absolute top-0 left-0 w-1.5 h-full bg-indigo-600"></div>
+
+                    {/* 상단 뱃지 라인 */}
+                    <div className="flex flex-wrap items-center justify-between gap-2 pl-2">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 bg-indigo-600 text-white text-[10px] font-black rounded-md">
+                          선생님 과제
+                        </span>
+                        <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 font-bold text-xs rounded-lg border border-indigo-200">
+                          {asg.className}
+                        </span>
+                        <span className="px-2 py-0.5 bg-amber-50 text-amber-800 font-black text-xs rounded-lg border border-amber-200 flex items-center gap-1">
+                          <Sparkles className="w-3 h-3 text-amber-500" />
+                          <span>보상 +{asg.rewardXp} XP</span>
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
+                        <Clock className="w-3.5 h-3.5 text-slate-400" />
+                        <span>마감: {asg.dueDate}</span>
+                        {isTeacher && onDeleteAssignment && (
+                          <button
+                            type="button"
+                            onClick={() => onDeleteAssignment(asg.id)}
+                            className="p-1 text-slate-300 hover:text-rose-600 transition-colors ml-1"
+                            title="과제 삭제"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* 과제 제목 및 내용 */}
+                    <div className="pl-2 space-y-2">
+                      <h4 className="text-base font-black text-slate-900 leading-snug">
+                        <MathText text={asg.title} />
+                      </h4>
+                      <div className="text-xs text-slate-700 bg-slate-50 p-3 rounded-2xl border border-slate-100 leading-relaxed">
+                        <MathText text={asg.description} />
+                      </div>
+                      {asg.imageUrl && (
+                        <div className="mt-2">
+                          <img
+                            src={asg.imageUrl}
+                            alt="과제 학습자료"
+                            className="max-h-40 rounded-xl object-contain border bg-white"
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 하단 액션 영역: 교사 vs 학생 차별화 */}
+                    <div className="pt-2 pl-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+                      {isTeacher ? (
+                        <>
+                          <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
+                            <span>
+                              제출: <span className="text-indigo-600 font-black">{asgSubs.length}명</span>
+                            </span>
+                            {pendingCount > 0 ? (
+                              <span className="px-2 py-0.5 bg-rose-50 text-rose-700 text-[10px] rounded-md font-black">
+                                채점 대기 {pendingCount}명
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] rounded-md font-black">
+                                채점 완료 ✓
+                              </span>
+                            )}
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => onOpenGradingModal(asg)}
+                            className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs rounded-xl shadow-sm transition-all flex items-center gap-1.5"
+                          >
+                            <FileText className="w-3.5 h-3.5" />
+                            <span>학생 답안 검토 & 채점 ({asgSubs.length}명)</span>
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          {mySub ? (
+                            <div className="w-full space-y-2">
+                              <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                                <div className="flex items-center gap-1.5 text-xs">
+                                  {mySub.status === 'correct' && (
+                                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[11px] font-black rounded-lg flex items-center gap-1">
+                                      <CheckCircle2 className="w-3 h-3" /> 정답 인정 (+{mySub.scoreXp} XP 획득!)
+                                    </span>
+                                  )}
+                                  {mySub.status === 'partial' && (
+                                    <span className="px-2 py-0.5 bg-amber-100 text-amber-800 text-[11px] font-black rounded-lg flex items-center gap-1">
+                                      <Award className="w-3 h-3" /> 부분 인정 (+{mySub.scoreXp} XP 획득!)
+                                    </span>
+                                  )}
+                                  {mySub.status === 'retry' && (
+                                    <span className="px-2 py-0.5 bg-rose-100 text-rose-800 text-[11px] font-black rounded-lg flex items-center gap-1">
+                                      <AlertCircle className="w-3 h-3" /> 재도전 요청
+                                    </span>
+                                  )}
+                                  {mySub.status === 'pending' && (
+                                    <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-[11px] font-black rounded-lg flex items-center gap-1">
+                                      <Clock className="w-3 h-3" /> 선생님 채점 대기 중
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div className="flex items-center gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => setExpandedAssignmentSubId(isExpanded ? null : asg.id)}
+                                    className="px-2.5 py-1 text-xs font-bold text-slate-600 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg transition-all flex items-center gap-1"
+                                  >
+                                    <span>내 제출 확인</span>
+                                    {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                                  </button>
+
+                                  {(mySub.status === 'pending' || mySub.status === 'retry') && (
+                                    <button
+                                      type="button"
+                                      onClick={() => onOpenSubmitModal(asg, mySub)}
+                                      className="px-2.5 py-1 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-all"
+                                    >
+                                      수정 제출
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* 내가 낸 비밀 답안 아코디언 */}
+                              {isExpanded && (
+                                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-2">
+                                  <div>
+                                    <span className="font-bold text-slate-500 block mb-0.5">내가 쓴 정답:</span>
+                                    <div className="font-bold text-slate-900 bg-white p-2 rounded-lg border border-slate-100">
+                                      <MathText text={mySub.answerText || '미작성'} />
+                                    </div>
+                                  </div>
+                                  {mySub.solutionLatex && (
+                                    <div>
+                                      <span className="font-bold text-slate-500 block mb-0.5">내가 쓴 수식 풀이:</span>
+                                      <div className="bg-white p-2 rounded-lg border border-slate-100">
+                                        <MathText text={mySub.solutionLatex} />
+                                      </div>
+                                    </div>
+                                  )}
+                                  {mySub.solutionImage && (
+                                    <div>
+                                      <span className="font-bold text-slate-500 block mb-0.5">첨부한 손풀이 사진:</span>
+                                      <img
+                                        src={mySub.solutionImage}
+                                        alt="내 손풀이"
+                                        className="max-h-32 object-contain rounded-lg border bg-white"
+                                      />
+                                    </div>
+                                  )}
+                                  {mySub.teacherFeedback && (
+                                    <div className="p-2.5 bg-indigo-50 border border-indigo-100 rounded-lg text-indigo-950">
+                                      <span className="font-black text-indigo-700 block mb-0.5">💬 선생님 피드백:</span>
+                                      <p className="font-medium leading-relaxed">{mySub.teacherFeedback}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="w-full flex items-center justify-between">
+                              <span className="text-xs text-slate-500 font-medium">
+                                🔒 비공개 제출 (선생님만 열람 가능)
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => onOpenSubmitModal(asg, null)}
+                                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs rounded-xl shadow-md shadow-indigo-200 transition-all flex items-center gap-1.5"
+                              >
+                                <FileText className="w-3.5 h-3.5" />
+                                <span>비밀 답안 & 풀이 제출하기</span>
+                              </button>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
 
         <div className="space-y-4">
@@ -2794,22 +3065,22 @@ const DEFAULT_ASSIGNMENTS = [
   {
     id: 'asg_101',
     classId: 'c_103',
-    className: '1학년 3반 수학',
-    title: '[수학 I] 지수방정식과 밑의 조건 탐구 과제',
-    description: '방정식 $2^{2x} - 5 \\cdot 2^x + 4 = 0$ 의 모든 실수해를 구하고, $t = 2^x > 0$ 치환 과정과 풀이 전개식을 작성하여 제출하세요. 손풀이 노트 사진을 함께 첨부해도 좋습니다.',
+    className: '1학년 3반 공통수학',
+    title: '[공통수학] 다항식의 인수분해 및 증명 도전',
+    description: '삼차다항식 $P(x) = x^3 - 4x^2 + x + 6$ 을 조립제법을 이용하여 인수분해하는 전 과정을 작성하세요. 손풀이 노트를 함께 첨부해도 좋습니다.',
     imageUrl: '',
-    dueDate: '2026-03-31',
+    dueDate: '2026-04-10',
     rewardXp: 80,
     createdAt: '2026-03-10'
   },
   {
     id: 'asg_102',
     classId: 'c_101',
-    className: '1학년 1반 수학',
-    title: '[공통수학] 다항식의 인수분해 및 증명 도전',
-    description: '삼차다항식 $P(x) = x^3 - 4x^2 + x + 6$ 을 조립제법을 이용하여 인수분해하는 전 과정을 작성하세요.',
+    className: '1학년 1반 공통수학',
+    title: '[공통수학] 이차방정식의 판별식과 근의 성질 탐구',
+    description: '이차방정식 $x^2 - 2(k-1)x + k^2 - 3 = 0$ 이 서로 다른 두 실근을 갖기 위한 정수 $k$ 의 조건을 구하고 풀이과정을 작성하세요.',
     imageUrl: '',
-    dueDate: '2026-04-10',
+    dueDate: '2026-04-15',
     rewardXp: 50,
     createdAt: '2026-03-11'
   }
@@ -3778,37 +4049,37 @@ function AssignmentView({
 const DEFAULT_CLASSES = [
   {
     id: 'c_101',
-    name: '1학년 1반 수학',
+    name: '1학년 1반 공통수학',
     grade: '1',
     classNum: '1',
-    subject: '수학',
+    subject: '공통수학',
     code: 'MATH101',
     teacherName: '교사 관리자',
-    description: '서울외고 1학년 1반 수학 Q&A 및 피드백 학급',
+    description: '서울외고 1학년 1반 공통수학 Q&A 및 과제 학급',
     studentCount: 24,
     createdAt: '2026-03-01'
   },
   {
     id: 'c_102',
-    name: '1학년 2반 수학',
+    name: '1학년 2반 공통수학',
     grade: '1',
     classNum: '2',
-    subject: '수학',
+    subject: '공통수학',
     code: 'MATH102',
     teacherName: '교사 관리자',
-    description: '서울외고 1학년 2반 수학 Q&A 및 피드백 학급',
+    description: '서울외고 1학년 2반 공통수학 Q&A 및 과제 학급',
     studentCount: 25,
     createdAt: '2026-03-01'
   },
   {
     id: 'c_103',
-    name: '1학년 3반 수학',
+    name: '1학년 3반 공통수학',
     grade: '1',
     classNum: '3',
-    subject: '수학',
+    subject: '공통수학',
     code: 'MATH103',
     teacherName: '교사 관리자',
-    description: '서울외고 1학년 3반 수학 Q&A 및 피드백 학급',
+    description: '서울외고 1학년 3반 공통수학 Q&A 및 과제 학급',
     studentCount: 26,
     createdAt: '2026-03-01'
   }
@@ -4660,6 +4931,8 @@ export default function App() {
             classes={classes}
             questions={questions}
             classMembers={classMembers}
+            assignments={assignments}
+            submissions={submissions}
             onAddQuestion={handleAddQuestion}
             onAddAnswer={handleAddAnswer}
             onAdoptAnswer={handleAdoptAnswer}
@@ -4668,15 +4941,6 @@ export default function App() {
             onDeleteAnswer={handleDeleteAnswer}
             onOpenRoster={() => setIsRosterOpen(true)}
             onGoToGuide={() => setActiveTab('guide')}
-          />
-        )}
-
-        {activeTab === 'assignments' && (
-          <AssignmentView
-            user={user}
-            classes={classes}
-            assignments={assignments}
-            submissions={submissions}
             onOpenCreateAssignment={() => setIsCreateAssignmentOpen(true)}
             onOpenSubmitModal={(asg, sub) => {
               setSelectedAssignmentForSubmit(asg)
@@ -4689,6 +4953,28 @@ export default function App() {
             }}
             onDeleteAssignment={handleDeleteAssignment}
           />
+        )}
+
+        {activeTab === 'assignments' && (
+          <div className="max-w-6xl mx-auto px-4 py-8">
+            <AssignmentView
+              user={user}
+              classes={classes}
+              assignments={assignments}
+              submissions={submissions}
+              onOpenCreateAssignment={() => setIsCreateAssignmentOpen(true)}
+              onOpenSubmitModal={(asg, sub) => {
+                setSelectedAssignmentForSubmit(asg)
+                setEditingSubmission(sub)
+                setIsSubmissionOpen(true)
+              }}
+              onOpenGradingModal={(asg) => {
+                setSelectedAssignmentForGrading(asg)
+                setIsGradingOpen(true)
+              }}
+              onDeleteAssignment={handleDeleteAssignment}
+            />
+          </div>
         )}
 
         {activeTab === 'pets' && (
