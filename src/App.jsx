@@ -305,6 +305,16 @@ function Header({ user, activeTab, setActiveTab, onGoogleLogin, onLogout, onOpen
           >
             🏆 명예의 전당
           </button>
+          <button
+            onClick={() => setActiveTab('guide')}
+            className={`px-3 py-1.5 text-xs font-black rounded-xl transition-all flex items-center gap-1 ${
+              activeTab === 'guide'
+                ? 'bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-300'
+                : 'text-indigo-700 hover:bg-indigo-50 hover:text-indigo-800'
+            }`}
+          >
+            <span>📖 사용법 안내</span>
+          </button>
         </div>
 
         <div className="flex items-center space-x-2">
@@ -600,6 +610,756 @@ function PetShowcaseView({ user, showcases, onLikeShowcase, onPostShowcase, petC
               </div>
             </div>
           ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// 📖 ClassTuning 대화형 인터랙티브 사용법 안내 컴포넌트
+function UserGuideView({ user, onGoogleLogin, onGoToQa }) {
+  const [activeStep, setActiveStep] = useState(1)
+
+  // 1단계 온보딩 시뮬레이터 상태
+  const [simRole, setSimRole] = useState('student')
+  const [simStudentId, setSimStudentId] = useState('10305')
+  const [simName, setSimName] = useState('홍길동')
+  const [simPetId, setSimPetId] = useState('koala')
+
+  // 2단계 수식 툴바 시뮬레이터 상태
+  const [simMathInput, setSimMathInput] = useState('수학 함수 $f(x) = \\frac{a}{b}$ 의 극한값 $\\lim\\limits_{x \\to 0}$')
+
+  // 3단계 XP 차등 보상 시뮬레이터 상태
+  const [simXp, setSimXp] = useState(100)
+  const [simXpToast, setSimXpToast] = useState(null)
+
+  // 4단계 3D 펫 진화 뷰어 상태
+  const [previewPetId, setPreviewPetId] = useState('koala')
+  const [previewLevel, setPreviewLevel] = useState(3)
+
+  // 5단계 알 부화 시뮬레이터 상태
+  const [simHatched, setSimHatched] = useState(null)
+
+  // 1단계 학년/반 계산
+  const calculatedGrade = simStudentId && simStudentId.length >= 3 ? simStudentId[0] : '1'
+  const calculatedClass = simStudentId && simStudentId.length >= 3 ? simStudentId.substring(1, 3).replace(/^0/, '') : '3'
+  const calculatedNumber = simStudentId && simStudentId.length >= 5 ? simStudentId.substring(3).replace(/^0/, '') : '5'
+
+  const steps = [
+    { num: 1, title: '1. 가입 & 자동 반배정', icon: '🎓', desc: '학교 계정 1초 로그인 & 학번으로 자동 반배정' },
+    { num: 2, title: '2. 수식 질문 올리기', icon: '✍️', desc: 'Visual 수식 툴바 & KaTeX 실시간 렌더링' },
+    { num: 3, title: '3. 동료 답변 & 차등 XP', icon: '💬', desc: '내 학급 +50 XP vs 타 학급 +25 XP & 채택 +100 XP' },
+    { num: 4, title: '4. 3D 펫 5단계 성장', icon: '🐾', desc: '1,000 XP 달성 시 스타 튜터 등극 & 3D 진화' },
+    { num: 5, title: '5. 명예의 전당 & 알 상점', icon: '🏆', desc: '전설 쇼케이스 등록 & 100 XP 랜덤 알 부화' }
+  ]
+
+  const handleSimAddXp = (amount, desc) => {
+    setSimXp(prev => Math.min(1000, prev + amount))
+    setSimXpToast(`🎉 ${desc} (+${amount} XP)`)
+    setTimeout(() => setSimXpToast(null), 3000)
+  }
+
+  const handleSimHatch = () => {
+    const readyPets = STARTER_PETS.filter(p => p.isReady)
+    const picked = readyPets[Math.floor(Math.random() * readyPets.length)]
+    setSimHatched(picked)
+  }
+
+  const previewInfo = getLevelInfo(
+    previewLevel === 1 ? 0 : previewLevel === 2 ? 150 : previewLevel === 3 ? 350 : previewLevel === 4 ? 650 : 1000,
+    STARTER_PETS.find(p => p.id === previewPetId)
+  )
+
+  return (
+    <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
+      {/* 히어로 헤더 */}
+      <div className="bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 rounded-3xl p-6 md:p-8 text-white shadow-xl flex flex-wrap items-center justify-between gap-6 border border-indigo-700 relative overflow-hidden">
+        <div className="space-y-3 max-w-2xl relative z-10">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="px-3 py-1 bg-amber-400 text-slate-950 text-xs font-black rounded-full shadow-sm">
+              📖 완전 정복 가이드
+            </span>
+            <span className="px-3 py-1 bg-white/10 text-indigo-200 text-xs font-bold rounded-full border border-white/20">
+              로그인 없이 누구나 열람 가능
+            </span>
+          </div>
+          <h2 className="text-2xl md:text-3xl font-black tracking-tight leading-tight">
+            ClassTuning 대화형 인터랙티브 사용법 안내
+          </h2>
+          <p className="text-xs md:text-sm text-indigo-100 leading-relaxed">
+            서울외고 전용 실시간 학급 P2P 질의응답 및 3D 펫 파트너 성장 플랫폼에 오신 것을 환영합니다! 아래 5단계 코스를 통해 로그인부터 자동 반배정, 수식 질문 작성, 차등 XP 획득, 그리고 5단계 3D 펫 성장까지 실제 화면 모형으로 직접 체험하며 쉽게 배울 수 있습니다.
+          </p>
+          <div className="flex flex-wrap items-center gap-3 pt-2">
+            <button
+              onClick={onGoToQa}
+              className="px-4 py-2 bg-white text-indigo-900 hover:bg-indigo-50 font-black rounded-xl text-xs shadow-md transition-all flex items-center gap-1.5"
+            >
+              <span>🌐 Q&A 질문 피드로 이동</span>
+            </button>
+            {!user && (
+              <button
+                onClick={onGoogleLogin}
+                className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black rounded-xl text-xs shadow-md transition-all flex items-center gap-1.5"
+              >
+                <span>🔑 학교 구글 계정으로 로그인</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="relative z-10 hidden sm:block text-7xl animate-float-3d">
+          🎓
+        </div>
+      </div>
+
+      {/* 5단계 네비게이션 탭 바 */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 bg-slate-100 p-2 rounded-2xl border border-slate-200">
+        {steps.map((st) => (
+          <button
+            key={st.num}
+            onClick={() => setActiveStep(st.num)}
+            className={`p-3 rounded-xl text-left transition-all space-y-1 ${
+              activeStep === st.num
+                ? 'bg-white text-indigo-700 shadow-md ring-2 ring-indigo-400'
+                : 'text-slate-600 hover:bg-white/60'
+            }`}
+          >
+            <div className="flex items-center space-x-1.5">
+              <span className="text-base">{st.icon}</span>
+              <span className="font-black text-xs">{st.title}</span>
+            </div>
+            <p className="text-[10px] text-slate-400 line-clamp-1">{st.desc}</p>
+          </button>
+        ))}
+      </div>
+
+      {/* 단계별 대화형 상세 안내 본문 */}
+      <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-sm space-y-8">
+        {/* STEP 1: 가입 & 자동 반배정 */}
+        {activeStep === 1 && (
+          <div className="space-y-6">
+            <div className="border-b pb-4">
+              <span className="text-xs font-black text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full">
+                STEP 1 코스
+              </span>
+              <h3 className="text-xl font-black text-slate-800 mt-2">
+                🎓 학교 구글 계정 1초 로그인 & 학번에 의한 자동 반배정
+              </h3>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                번거로운 가입 절차나 초대 QR코드 없이, 서울외고 공식 계정(@sfl.sen.hs.kr)으로 로그인하면 학번에 따라 소속 학급으로 자동 배정됩니다.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+              {/* 왼쪽: 설명 카드 */}
+              <div className="space-y-4 text-xs text-slate-700">
+                <div className="p-4 bg-indigo-50/60 rounded-2xl border border-indigo-100 space-y-2">
+                  <h4 className="font-black text-sm text-indigo-900 flex items-center gap-1.5">
+                    <span>1️⃣ 구글 공식 학교 계정 확인</span>
+                  </h4>
+                  <p className="text-slate-600 leading-relaxed">
+                    상단 우측 <span className="font-bold text-indigo-700">[학교 구글 로그인]</span> 버튼을 누르면 서울외고 Google Workspace 계정으로 안전하게 로그인됩니다. 외부 개인 이메일은 접속이 차단되어 교내 보안이 철저히 유지됩니다.
+                  </p>
+                </div>
+
+                <div className="p-4 bg-emerald-50/60 rounded-2xl border border-emerald-100 space-y-2">
+                  <h4 className="font-black text-sm text-emerald-900 flex items-center gap-1.5">
+                    <span>2️⃣ 학번 입력 시 자동 반배정 (QR 불필요)</span>
+                  </h4>
+                  <p className="text-slate-600 leading-relaxed">
+                    학생이 5자리 학번(예: <b>10305</b>)을 입력하면, 1학년 3반 5번임을 시스템이 즉시 인식하여 <b>1학년 3반 수학</b> 학급으로 자동 배정됩니다.
+                  </p>
+                </div>
+
+                <div className="p-4 bg-amber-50/60 rounded-2xl border border-amber-100 space-y-2">
+                  <h4 className="font-black text-sm text-amber-900 flex items-center gap-1.5">
+                    <span>3️⃣ 실명 자동 마스킹 보호 & 0 XP 공정 시작</span>
+                  </h4>
+                  <p className="text-slate-600 leading-relaxed">
+                    학생 이름은 화면에 <b>조** (10305)</b> 형태로 마스킹 처리되어 교내 개인정보가 안전하게 보호됩니다. 또한 모든 사용자는 <b>0 XP 신비의 알</b>에서 공정하게 시작합니다.
+                  </p>
+                </div>
+              </div>
+
+              {/* 오른쪽: 인터랙티브 실시간 모형 시뮬레이터 */}
+              <div className="bg-slate-50 p-5 rounded-3xl border-2 border-indigo-200 space-y-4">
+                <div className="flex items-center justify-between border-b pb-2">
+                  <span className="font-black text-xs text-slate-700 flex items-center gap-1">
+                    <span>🖥️ 실제 온보딩 화면 미니 체험</span>
+                  </span>
+                  <span className="text-[10px] text-indigo-600 font-bold bg-white px-2 py-0.5 rounded-full border">
+                    직접 값을 입력해보세요!
+                  </span>
+                </div>
+
+                <div className="space-y-3 text-xs">
+                  <div>
+                    <label className="block font-bold text-slate-600 mb-1">역할 선택</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setSimRole('student')}
+                        className={`py-2 rounded-xl font-bold transition-all ${
+                          simRole === 'student' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-white border text-slate-600'
+                        }`}
+                      >
+                        🧑‍🎓 학생 모드
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSimRole('teacher')}
+                        className={`py-2 rounded-xl font-bold transition-all ${
+                          simRole === 'teacher' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-white border text-slate-600'
+                        }`}
+                      >
+                        👨‍🏫 교사 관리자
+                      </button>
+                    </div>
+                  </div>
+
+                  {simRole === 'student' ? (
+                    <div className="space-y-2">
+                      <div>
+                        <label className="block font-bold text-slate-600 mb-0.5">학번 5자리 (입력 시 자동 계산)</label>
+                        <input
+                          type="text"
+                          value={simStudentId}
+                          onChange={(e) => setSimStudentId(e.target.value)}
+                          placeholder="예: 10305"
+                          className="w-full px-3 py-1.5 rounded-xl border border-slate-300 bg-white font-mono font-bold text-xs focus:ring-2 focus:ring-indigo-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-bold text-slate-600 mb-0.5">이름 또는 별칭</label>
+                        <input
+                          type="text"
+                          value={simName}
+                          onChange={(e) => setSimName(e.target.value)}
+                          placeholder="예: 홍길동"
+                          className="w-full px-3 py-1.5 rounded-xl border border-slate-300 bg-white font-bold text-xs focus:ring-2 focus:ring-indigo-500"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-indigo-50/70 rounded-xl border border-indigo-100 text-indigo-900 font-bold text-xs">
+                      👨‍🏫 교사는 로그인 시 별칭 설정 및 '새 학급 개설' 권한을 가지며 학생들의 전체 질문을 총괄 지도합니다.
+                    </div>
+                  )}
+
+                  {/* 자동 계산 결과 미리보기 */}
+                  <div className="p-4 bg-white rounded-2xl border border-indigo-200 shadow-sm space-y-1.5">
+                    <span className="text-[10px] font-black text-indigo-600 uppercase">⚡ 실시간 자동 감지 결과</span>
+                    <div className="flex justify-between items-center font-bold text-slate-800">
+                      <span>소속 배정 학급:</span>
+                      <span className="text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg border border-indigo-100">
+                        {simRole === 'teacher' ? '교사 관리 학급' : `${calculatedGrade}학년 ${calculatedClass}반 수학`}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center font-bold text-slate-800">
+                      <span>화면 표시 닉네임:</span>
+                      <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100">
+                        {simRole === 'teacher' ? `${simName || '선생님'} 선생님 (교사)` : `${maskStudentInfo(simName || '학생')} (${simStudentId})`}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center font-bold text-slate-800">
+                      <span>초기 시작 경험치:</span>
+                      <span className="text-amber-700 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-100">
+                        0 XP (1단계 신비의 알 🥚)
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 2: 수식 질문 올리기 & Visual 수식 툴바 */}
+        {activeStep === 2 && (
+          <div className="space-y-6">
+            <div className="border-b pb-4">
+              <span className="text-xs font-black text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full">
+                STEP 2 코스
+              </span>
+              <h3 className="text-xl font-black text-slate-800 mt-2">
+                ✍️ 풀이 사진 첨부 & Visual 수식 툴바로 손쉬운 질문 작성
+              </h3>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                복잡한 수학 기호도 클릭 한 번으로 커서 위치에 바로 삽입! KaTeX 엔진이 실시간으로 미려한 수학 공식을 그려줍니다.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+              <div className="space-y-4 text-xs text-slate-700">
+                <div className="p-4 bg-indigo-50/60 rounded-2xl border border-indigo-100 space-y-2">
+                  <h4 className="font-black text-sm text-indigo-900 flex items-center gap-1.5">
+                    <span>📐 클릭 한 번으로 수식 완성 (Visual 툴바)</span>
+                  </h4>
+                  <p className="text-slate-600 leading-relaxed">
+                    키보드로 입력하기 어려운 분수, 거듭제곱, 루트, 미분, 정적분($\int$), 시그마($\sum$), 삼각함수, 행렬을 버튼 클릭만으로 커서 위치에 쏙 삽입할 수 있습니다.
+                  </p>
+                </div>
+
+                <div className="p-4 bg-amber-50/60 rounded-2xl border border-amber-100 space-y-2">
+                  <h4 className="font-black text-sm text-amber-900 flex items-center gap-1.5">
+                    <span>📷 손글씨 풀이 사진 바로 첨부</span>
+                  </h4>
+                  <p className="text-slate-600 leading-relaxed">
+                    교재나 연습장에 적은 문제 및 풀이를 스마트폰이나 PC에서 사진 파일로 즉시 등록하여 친구들과 시각적으로 공유할 수 있습니다.
+                  </p>
+                </div>
+
+                <div className="p-4 bg-emerald-50/60 rounded-2xl border border-emerald-100 space-y-2">
+                  <h4 className="font-black text-sm text-emerald-900 flex items-center gap-1.5">
+                    <span>✨ 질문 등록 시 +30 XP 보상</span>
+                  </h4>
+                  <p className="text-slate-600 leading-relaxed">
+                    학습 질문을 적극적으로 등록할 때마다 파트너 펫에게 <b>+30 XP</b>의 성실 질문 보너스 경험치가 지급됩니다.
+                  </p>
+                </div>
+              </div>
+
+              {/* 오른쪽: 인터랙티브 수식 툴바 체험 샌드박스 */}
+              <div className="bg-slate-50 p-5 rounded-3xl border-2 border-indigo-200 space-y-4">
+                <div className="flex items-center justify-between border-b pb-2">
+                  <span className="font-black text-xs text-slate-700">📐 수식 툴바 직접 눌러보기</span>
+                  <span className="text-[10px] text-indigo-600 font-bold bg-white px-2 py-0.5 rounded-full border">
+                    버튼을 누르면 아래 입력창에 삽입됩니다
+                  </span>
+                </div>
+
+                {/* 미니 툴바 버튼 */}
+                <div className="flex flex-wrap gap-1.5 bg-slate-200/60 p-2 rounded-xl">
+                  {[
+                    { label: '분수 a/b', latex: '$\\frac{a}{b}$' },
+                    { label: '루트 √x', latex: '$\\sqrt{x}$' },
+                    { label: '거듭제곱 xⁿ', latex: '$x^{n}$' },
+                    { label: '극한 lim', latex: '$\\lim\\limits_{x \\to 0}$' },
+                    { label: '시그마 ∑', latex: '$\\sum\\limits_{k=1}^{n}$' },
+                    { label: '적분 ∫', latex: '$\\int\\limits_{a}^{b} f(x) dx$' },
+                    { label: '파이 π', latex: '$\\pi$' }
+                  ].map((btn, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setSimMathInput(prev => prev + ' ' + btn.latex)}
+                      className="px-2.5 py-1 bg-white hover:bg-indigo-50 hover:text-indigo-600 border border-slate-300 rounded-lg text-xs font-bold transition-all shadow-sm"
+                    >
+                      {btn.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-slate-600">입력 텍스트 ($...$ 안의 내용이 수식으로 렌더링):</label>
+                  <textarea
+                    rows={2}
+                    value={simMathInput}
+                    onChange={(e) => setSimMathInput(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono bg-white focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+
+                {/* 실시간 렌더링 미리보기 상자 */}
+                <div className="p-4 bg-indigo-50/80 rounded-2xl border border-indigo-200 space-y-1">
+                  <span className="text-[10px] font-black text-indigo-700">✨ 실시간 수식 렌더링 결과:</span>
+                  <div className="text-sm font-bold text-slate-800 leading-relaxed bg-white p-3 rounded-xl border border-indigo-100 min-h-[48px] flex items-center">
+                    <MathText text={simMathInput} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 3: 동료 답변 & 차등 XP 포인트 보상 */}
+        {activeStep === 3 && (
+          <div className="space-y-6">
+            <div className="border-b pb-4">
+              <span className="text-xs font-black text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full">
+                STEP 3 코스
+              </span>
+              <h3 className="text-xl font-black text-slate-800 mt-2">
+                💬 동료 답변 & 우리 반 집중을 위한 차등 XP 보상 시스템
+              </h3>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                내 학급 친구의 질문에 먼저 정성을 쏟을 수 있도록 스마트한 차등 경험치 보상 엔진이 작동합니다.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+              <div className="space-y-4 text-xs text-slate-700">
+                <div className="p-4 bg-amber-50/60 rounded-2xl border border-amber-200 space-y-2">
+                  <h4 className="font-black text-sm text-amber-900 flex items-center gap-1.5">
+                    <span>🏠 내 학급 질문에 답변: +50 XP (100% 풀보상)</span>
+                  </h4>
+                  <p className="text-slate-600 leading-relaxed">
+                    자신이 소속된 학급 친구의 질문에 친절한 풀이를 남기면 <b>+50 XP 전액</b>이 지급됩니다. 우리 반 친구들을 먼저 돕는 것이 가장 빠른 성장 지름길입니다!
+                  </p>
+                </div>
+
+                <div className="p-4 bg-slate-100 rounded-2xl border border-slate-200 space-y-2">
+                  <h4 className="font-black text-sm text-slate-800 flex items-center gap-1.5">
+                    <span>🌐 타 학급 질문에 답변: +25 XP (50% 보상)</span>
+                  </h4>
+                  <p className="text-slate-600 leading-relaxed">
+                    다른 반 질문에 답변할 경우 경험치가 50%로 조정됩니다. 단, <b>5단계 마스터를 달성하여 '명예 스타 튜터'</b>가 되면 타 학급 답변도 100%(+50 XP) 전액을 받게 됩니다!
+                  </p>
+                </div>
+
+                <div className="p-4 bg-emerald-50/60 rounded-2xl border border-emerald-200 space-y-2">
+                  <h4 className="font-black text-sm text-emerald-900 flex items-center gap-1.5">
+                    <span>🏆 질문자 답변 채택 시: +100 XP 대박 보상</span>
+                  </h4>
+                  <p className="text-slate-600 leading-relaxed">
+                    질문자가 가장 유익한 답변 1건을 [채택]하면, 답변 작성자에게 <b>+100 XP의 축하 보상</b>이 즉시 지급됩니다!
+                  </p>
+                </div>
+
+                <div className="p-3 bg-rose-50 rounded-xl border border-rose-200 text-rose-700 font-bold text-[11px]">
+                  ⚠️ 공정성 원칙: 자기 질문에 자신이 답변하거나 채택하는 '자문자답'은 포인트 부풀리기 방지를 위해 엄격히 차단됩니다.
+                </div>
+              </div>
+
+              {/* 오른쪽: 인터랙티브 차등 경험치 적립 체험기 */}
+              <div className="bg-slate-50 p-5 rounded-3xl border-2 border-indigo-200 space-y-4">
+                <div className="flex items-center justify-between border-b pb-2">
+                  <span className="font-black text-xs text-slate-700">🎮 경험치 획득 시뮬레이터</span>
+                  <span className="text-[10px] text-indigo-600 font-bold bg-white px-2 py-0.5 rounded-full border">
+                    버튼을 눌러 경험치를 모아보세요!
+                  </span>
+                </div>
+
+                {/* 현재 게이지 */}
+                <div className="bg-white p-4 rounded-2xl border border-indigo-100 shadow-sm space-y-2">
+                  <div className="flex justify-between items-center text-xs font-black">
+                    <span className="text-slate-700">시뮬레이터 누적 경험치:</span>
+                    <span className="text-indigo-600 text-sm">{simXp} / 1000 XP</span>
+                  </div>
+                  <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden p-0.5 border">
+                    <div
+                      className="bg-gradient-to-r from-amber-400 to-indigo-600 h-full rounded-full transition-all duration-300"
+                      style={{ width: `${Math.min(100, (simXp / 1000) * 100)}%` }}
+                    ></div>
+                  </div>
+                  {simXpToast && (
+                    <div className="p-2 bg-amber-100 text-amber-900 font-black text-xs rounded-xl text-center animate-bounce">
+                      {simXpToast}
+                    </div>
+                  )}
+                </div>
+
+                {/* 체험 액션 버튼들 */}
+                <div className="space-y-2">
+                  <button
+                    onClick={() => handleSimAddXp(50, '내 학급 질문에 답변 완료!')}
+                    className="w-full py-2.5 px-3 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs rounded-xl shadow-sm transition-all flex items-center justify-between"
+                  >
+                    <span>🏠 내 학급 질문에 답변 남기기</span>
+                    <span className="bg-white/20 px-2 py-0.5 rounded-lg text-[10px]">+50 XP (100%)</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleSimAddXp(25, '타 학급 질문에 답변 완료!')}
+                    className="w-full py-2.5 px-3 bg-slate-700 hover:bg-slate-800 text-white font-black text-xs rounded-xl shadow-sm transition-all flex items-center justify-between"
+                  >
+                    <span>🌐 타 학급 질문에 답변 남기기</span>
+                    <span className="bg-white/20 px-2 py-0.5 rounded-lg text-[10px]">+25 XP (50%)</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleSimAddXp(100, '질문자가 내 답변을 최고로 채택!')}
+                    className="w-full py-2.5 px-3 bg-amber-500 hover:bg-amber-600 text-white font-black text-xs rounded-xl shadow-sm transition-all flex items-center justify-between"
+                  >
+                    <span>🏆 질문자에게 답변 채택 받기</span>
+                    <span className="bg-white/20 px-2 py-0.5 rounded-lg text-[10px]">+100 XP (대박!)</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 4: 3D 펫 5단계 진화 & 스타 튜터 달성 */}
+        {activeStep === 4 && (
+          <div className="space-y-6">
+            <div className="border-b pb-4">
+              <span className="text-xs font-black text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full">
+                STEP 4 코스
+              </span>
+              <h3 className="text-xl font-black text-slate-800 mt-2">
+                🐾 나만의 파트너 3D 펫 5단계 성장 & 명예 스타 튜터 달성
+              </h3>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                0 XP 신비의 알에서 시작하여 1,000 XP 전설 마스터까지! 호랑이, 고양이, 코알라 등 생동감 넘치는 3D 그래픽으로 진화합니다.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+              <div className="space-y-3 text-xs text-slate-700">
+                <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-2xl">🥚</span>
+                    <div>
+                      <h5 className="font-black text-slate-800">1단계: 신비의 알 (0 ~ 99 XP)</h5>
+                      <p className="text-[11px] text-slate-500">부화를 기다리는 잠재력의 알</p>
+                    </div>
+                  </div>
+                  <span className="font-extrabold text-slate-400">초기 상태</span>
+                </div>
+
+                <div className="p-3 bg-amber-50/60 rounded-2xl border border-amber-200 flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-2xl">🐣</span>
+                    <div>
+                      <h5 className="font-black text-amber-900">2단계: 아기 펫 (100 ~ 299 XP)</h5>
+                      <p className="text-[11px] text-amber-700">알을 깨고 아장아장 부화한 귀여운 아기 펫</p>
+                    </div>
+                  </div>
+                  <span className="font-extrabold text-amber-700">부화 성공</span>
+                </div>
+
+                <div className="p-3 bg-emerald-50/60 rounded-2xl border border-emerald-200 flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-2xl">🌿</span>
+                    <div>
+                      <h5 className="font-black text-emerald-900">3단계: 학생 펫 (300 ~ 599 XP)</h5>
+                      <p className="text-[11px] text-emerald-700">책가방을 메고 기본 수학 개념을 정복한 펫</p>
+                    </div>
+                  </div>
+                  <span className="font-extrabold text-emerald-700">개념 마스터</span>
+                </div>
+
+                <div className="p-3 bg-indigo-50/60 rounded-2xl border border-indigo-200 flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-2xl">🎓</span>
+                    <div>
+                      <h5 className="font-black text-indigo-900">4단계: 학사 펫 (600 ~ 999 XP)</h5>
+                      <p className="text-[11px] text-indigo-700">도서관에서 학사모를 쓰고 심화 킬러문항을 해결</p>
+                    </div>
+                  </div>
+                  <span className="font-extrabold text-indigo-700">심화 튜터</span>
+                </div>
+
+                <div className="p-4 bg-gradient-to-r from-amber-500 to-indigo-600 text-white rounded-2xl shadow-md space-y-1">
+                  <div className="flex items-center justify-between">
+                    <h5 className="font-black text-sm flex items-center gap-1.5">
+                      <span>👑 5단계: 전설 마스터 펫 (1,000 XP 이상)</span>
+                    </h5>
+                    <span className="px-2 py-0.5 bg-amber-400 text-slate-950 font-black text-[10px] rounded-full">
+                      ⭐ 스타 튜터 등극
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-amber-100 leading-relaxed">
+                    황금 왕관을 쓴 전설의 마스터! 명예의 전당 쇼케이스 등록 권한 및 타 학급 답변 100%(+50 XP) 풀보상 특권을 영구 획득합니다.
+                  </p>
+                </div>
+              </div>
+
+              {/* 오른쪽: 3D 펫 5단계 실시간 프리뷰어 */}
+              <div className="bg-slate-50 p-5 rounded-3xl border-2 border-indigo-200 space-y-4">
+                <div className="flex items-center justify-between border-b pb-2">
+                  <span className="font-black text-xs text-slate-700">🐾 3D 펫 진화 단계 직접 확인</span>
+                  <div className="flex space-x-1">
+                    {STARTER_PETS.filter(p => p.isReady).map(p => (
+                      <button
+                        key={p.id}
+                        onClick={() => setPreviewPetId(p.id)}
+                        className={`px-2 py-1 text-[11px] font-black rounded-lg transition-all ${
+                          previewPetId === p.id ? 'bg-indigo-600 text-white shadow-sm' : 'bg-white border text-slate-600'
+                        }`}
+                      >
+                        {p.icon} {p.name.split(' ')[0]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 단계 버튼들 */}
+                <div className="grid grid-cols-5 gap-1.5">
+                  {[1, 2, 3, 4, 5].map((lv) => (
+                    <button
+                      key={lv}
+                      onClick={() => setPreviewLevel(lv)}
+                      className={`py-1.5 rounded-xl font-black text-xs transition-all ${
+                        previewLevel === lv
+                          ? 'bg-amber-400 text-slate-950 shadow-md ring-2 ring-amber-300'
+                          : 'bg-white border text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      {lv}단계 {lv === 1 ? '🥚' : lv === 2 ? '🐣' : lv === 3 ? '🌿' : lv === 4 ? '🎓' : '👑'}
+                    </button>
+                  ))}
+                </div>
+
+                {/* 3D 렌더링 화면 */}
+                <div className="bg-white rounded-2xl p-6 border border-indigo-100 text-center space-y-3 shadow-inner">
+                  <div className="flex justify-center">
+                    <PetAvatar
+                      petId={previewPetId}
+                      stageLevel={previewLevel}
+                      className="w-32 h-32"
+                    />
+                  </div>
+                  <div>
+                    <h4 className="font-black text-slate-800 text-base">{previewInfo.stageName}</h4>
+                    <p className="text-xs text-indigo-600 font-bold mt-0.5">
+                      {previewLevel === 1 && '🥚 0 ~ 99 XP: 아직 깨어나지 않은 신비의 알'}
+                      {previewLevel === 2 && '🐣 100 ~ 299 XP: 첫 번째 부화에 성공한 귀여운 아기'}
+                      {previewLevel === 3 && '🌿 300 ~ 599 XP: 가방을 메고 수학 모험을 떠난 학생'}
+                      {previewLevel === 4 && '🎓 600 ~ 999 XP: 도서관의 지혜를 흡수한 학사모 학자'}
+                      {previewLevel === 5 && '👑 1000 XP+: 최고의 스타 튜터 자격을 획득한 전설 황제'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 5: 명예의 전당 & 알 상점 */}
+        {activeStep === 5 && (
+          <div className="space-y-6">
+            <div className="border-b pb-4">
+              <span className="text-xs font-black text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full">
+                STEP 5 코스
+              </span>
+              <h3 className="text-xl font-black text-slate-800 mt-2">
+                🏆 명예의 전당 쇼케이스 자랑 & 100 XP 랜덤 알 상점
+              </h3>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                5단계 마스터들의 공부 비법 공유와 활동 포인트로 새로운 3D 펫을 부화시키는 다채로운 수집 공간입니다.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+              <div className="space-y-4 text-xs text-slate-700">
+                <div className="p-4 bg-amber-50/60 rounded-2xl border border-amber-200 space-y-2">
+                  <h4 className="font-black text-sm text-amber-900 flex items-center gap-1.5">
+                    <span>🏆 5단계 마스터 전용 명예의 전당</span>
+                  </h4>
+                  <p className="text-slate-600 leading-relaxed">
+                    1,000 XP를 달성한 학습자는 자신의 파트너 펫과 함께 학습 슬로건 및 수학 공부 팁을 영구 등록할 수 있습니다. 전교생이 '멋져요 👍'를 누르며 노하우를 함께 나눕니다.
+                  </p>
+                </div>
+
+                <div className="p-4 bg-indigo-50/60 rounded-2xl border border-indigo-200 space-y-2">
+                  <h4 className="font-black text-sm text-indigo-900 flex items-center gap-1.5">
+                    <span>🎁 100 XP 신비의 랜덤 알 상점</span>
+                  </h4>
+                  <p className="text-slate-600 leading-relaxed">
+                    열심히 질문/답변 활동으로 모은 100 XP를 사용하여 알 상점에서 새로운 동물 알을 부화시킬 수 있습니다. 이미 보유한 동물이 나오면 해당 펫에 즉시 +100 XP가 주입되어 더 빠르게 마스터로 진화합니다!
+                  </p>
+                </div>
+
+                <div className="p-4 bg-emerald-50/60 rounded-2xl border border-emerald-200 space-y-2">
+                  <h4 className="font-black text-sm text-emerald-900 flex items-center gap-1.5">
+                    <span>📱 스마트폰 홈 화면 추가 (PWA 앱처럼 사용)</span>
+                  </h4>
+                  <p className="text-slate-600 leading-relaxed">
+                    스마트폰 브라우저 메뉴에서 [홈 화면에 추가]를 누르면 전용 3D 아이콘과 함께 언제든지 앱처럼 터치 한 번으로 바로 접속할 수 있습니다.
+                  </p>
+                </div>
+              </div>
+
+              {/* 오른쪽: 알 부화 미니 가챠 체험 */}
+              <div className="bg-slate-50 p-5 rounded-3xl border-2 border-indigo-200 space-y-4">
+                <div className="flex items-center justify-between border-b pb-2">
+                  <span className="font-black text-xs text-slate-700">🥚 신비의 알 부화 시뮬레이터</span>
+                  <span className="text-[10px] text-indigo-600 font-bold bg-white px-2 py-0.5 rounded-full border">
+                    100 XP 체험 버튼
+                  </span>
+                </div>
+
+                <div className="text-center py-4 space-y-3 bg-white rounded-2xl border border-indigo-100 shadow-inner">
+                  {simHatched ? (
+                    <div className="space-y-2 animate-bounce">
+                      <div className="flex justify-center">
+                        <PetAvatar petId={simHatched.id} stageLevel={2} className="w-24 h-24" />
+                      </div>
+                      <h4 className="font-black text-indigo-900 text-sm">🎉 [{simHatched.name}] 아기 펫 부화 성공!</h4>
+                      <p className="text-xs text-slate-500">{simHatched.desc}</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="text-6xl animate-egg-pulse">🥚</div>
+                      <h4 className="font-black text-slate-800 text-sm">신비의 3D 알이 잠들어 있습니다</h4>
+                      <p className="text-xs text-slate-400">아래 버튼을 눌러 부화의 순간을 체험해보세요!</p>
+                    </div>
+                  )}
+
+                  <div className="pt-2">
+                    <button
+                      onClick={handleSimHatch}
+                      className="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-black text-xs rounded-xl shadow-md transition-all animate-breathe-3d"
+                    >
+                      {simHatched ? '🔄 다른 알 다시 부화해보기' : '🥚 신비의 알 부화시키기 (+100 XP 체험)'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 자주 묻는 질문 (FAQ) */}
+      <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-sm space-y-4">
+        <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
+          <span>❓ 자주 묻는 질문 (FAQ)</span>
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1.5">
+            <h4 className="font-black text-slate-900">Q. 개인 지메일이나 타 학교 계정으로 로그인할 수 있나요?</h4>
+            <p className="text-slate-600 leading-relaxed">
+              아닙니다. 교내 보안과 안전한 학급 질의응답을 위해 <b>@sfl.sen.hs.kr</b> 학교 공식 계정으로만 접근이 허용됩니다.
+            </p>
+          </div>
+
+          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1.5">
+            <h4 className="font-black text-slate-900">Q. 제 실명이나 학번이 다른 학생에게 그대로 노출되나요?</h4>
+            <p className="text-slate-600 leading-relaxed">
+              노출되지 않습니다! 모든 학생의 이름은 <b>조** (10305)</b> 형태로 자동 마스킹되어 개인정보가 철저하게 보호됩니다.
+            </p>
+          </div>
+
+          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1.5">
+            <h4 className="font-black text-slate-900">Q. 클래스 참여를 위해 QR 코드를 찍어야 하나요?</h4>
+            <p className="text-slate-600 leading-relaxed">
+              전혀 필요 없습니다! 학교 계정으로 로그인 후 5자리 학번만 입력하면 해당 학년/반 수학 클래스로 자동 배정됩니다.
+            </p>
+          </div>
+
+          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1.5">
+            <h4 className="font-black text-slate-900">Q. 명예 스타 튜터가 되면 어떤 특권이 주어지나요?</h4>
+            <p className="text-slate-600 leading-relaxed">
+              펫 1종 5단계(1,000 XP)를 달성하면 타 학급 질문에 답변해도 50%가 아닌 <b>100% (+50 XP)</b> 전액을 보상받으며, 명예의 전당 쇼케이스에 영구 등재됩니다.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* 하단 CTA 바 */}
+      <div className="bg-gradient-to-r from-indigo-50 to-amber-50 rounded-3xl p-6 border border-indigo-200 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h4 className="font-black text-slate-800 text-sm">지금 바로 ClassTuning을 시작해보세요!</h4>
+          <p className="text-xs text-slate-500">서울외고 친구들과 함께 수학 질문을 나누고 나만의 3D 펫을 성장시키세요.</p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={onGoToQa}
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs rounded-xl shadow-md transition-all"
+          >
+            질문 피드로 이동하기 ➔
+          </button>
+          {!user && (
+            <button
+              onClick={onGoogleLogin}
+              className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-black text-xs rounded-xl shadow-md transition-all"
+            >
+              학교 계정 로그인 🔑
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -931,7 +1691,7 @@ function SupabaseConfigModal({ isOpen, onClose }) {
 }
 
 // 메인 Q&A 대시보드
-function MainDashboard({ user, classes, questions, onAddQuestion, onAddAnswer, onAdoptAnswer, onSelectQrClass }) {
+function MainDashboard({ user, classes, questions, onAddQuestion, onAddAnswer, onAdoptAnswer, onGoToGuide }) {
   const [selectedClassId, setSelectedClassId] = useState('all')
   const [questionTitle, setQuestionTitle] = useState('')
   const [questionContent, setQuestionContent] = useState('')
@@ -1168,31 +1928,56 @@ function MainDashboard({ user, classes, questions, onAddQuestion, onAddAnswer, o
             </button>
 
             {classes.map((c) => (
-              <div key={c.id} className="flex items-center justify-between gap-1">
-                <button
-                  onClick={() => setSelectedClassId(c.id)}
-                  className={`flex-1 text-left px-3.5 py-2 rounded-xl text-xs font-bold transition-all truncate ${
-                    selectedClassId === c.id
-                      ? 'bg-indigo-600 text-white shadow-sm'
-                      : 'bg-slate-50 text-slate-700 hover:bg-slate-100'
-                  }`}
-                >
-                  {c.name}
-                </button>
-                <button
-                  onClick={() => onSelectQrClass(c)}
-                  className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-bold"
-                  title="입장 QR 보기"
-                >
-                  <QrCode className="w-3.5 h-3.5" />
-                </button>
-              </div>
+              <button
+                key={c.id}
+                onClick={() => setSelectedClassId(c.id)}
+                className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all truncate flex items-center justify-between ${
+                  selectedClassId === c.id
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'bg-slate-50 text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                <span className="truncate">{c.name}</span>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                  selectedClassId === c.id ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-600'
+                }`}>
+                  {c.studentCount || 1}명
+                </span>
+              </button>
             ))}
           </div>
         </div>
       </div>
 
       <div className="lg:col-span-3 space-y-6">
+        {/* 상단 1분 사용법 안내 바로가기 카드 배너 */}
+        <div className="bg-gradient-to-r from-indigo-50 via-white to-amber-50 rounded-3xl p-4 md:p-5 border border-indigo-100 flex flex-wrap items-center justify-between gap-3 shadow-sm">
+          <div className="flex items-center space-x-3.5">
+            <div className="w-11 h-11 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-md">
+              📖
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-extrabold text-slate-800 text-sm">
+                  ClassTuning 사용법이 궁금하신가요?
+                </h3>
+                <span className="px-2 py-0.5 bg-amber-400 text-slate-950 text-[10px] font-black rounded-full">
+                  1분 완전 정복
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">
+                자동 반배정 원리부터 Visual 수식 툴바 입력법, 3D 펫 5단계 성장 및 차등 XP 규칙을 대화형으로 안내합니다.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onGoToGuide}
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5"
+          >
+            <span>대화형 사용법 안내 보기 ➔</span>
+          </button>
+        </div>
+
         <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4">
           <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
             <span>✏️ 새 질문 등록하기</span>
@@ -1435,7 +2220,6 @@ export default function App() {
   const [isCreateClassOpen, setIsCreateClassOpen] = useState(false)
   const [isSupabaseModalOpen, setIsSupabaseModalOpen] = useState(false)
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false)
-  const [selectedQrClass, setSelectedQrClass] = useState(null)
 
   const [classes, setClasses] = useState(() => {
     const saved = localStorage.getItem('CLASS_TUNING_CLASSES')
@@ -1706,7 +2490,7 @@ export default function App() {
             onAddQuestion={handleAddQuestion}
             onAddAnswer={handleAddAnswer}
             onAdoptAnswer={handleAdoptAnswer}
-            onSelectQrClass={(c) => setSelectedQrClass(c)}
+            onGoToGuide={() => setActiveTab('guide')}
           />
         )}
 
@@ -1727,6 +2511,14 @@ export default function App() {
             onLikeShowcase={handleLikeShowcase}
             onPostShowcase={handlePostShowcase}
             petCollection={petCollection}
+          />
+        )}
+
+        {activeTab === 'guide' && (
+          <UserGuideView
+            user={user}
+            onGoogleLogin={handleGoogleLogin}
+            onGoToQa={() => setActiveTab('qa')}
           />
         )}
       </main>
