@@ -594,9 +594,27 @@ function SupabaseConfigModal({ isOpen, onClose }) {
 
   const handleSaveConfig = (e) => {
     e.preventDefault()
-    if (urlInput.trim()) localStorage.setItem('CLASS_TUNING_SUPABASE_URL', urlInput.trim())
-    if (keyInput.trim()) localStorage.setItem('CLASS_TUNING_SUPABASE_KEY', keyInput.trim())
-    alert('🔑 [Supabase 설정 저장 완료]\n실제 구글 OAuth 2.0 및 Supabase DB 연결이 적용되었습니다.')
+    const cleanUrl = urlInput.trim()
+    const cleanKey = keyInput.trim()
+
+    if (!cleanUrl || !cleanKey) {
+      alert('⚠️ Supabase Project URL과 Anon Key를 모두 입력해 주세요!')
+      return
+    }
+
+    localStorage.setItem('CLASS_TUNING_SUPABASE_URL', cleanUrl)
+    localStorage.setItem('CLASS_TUNING_SUPABASE_KEY', cleanKey)
+    try {
+      localStorage.setItem('CT_ENC_URL', btoa(encodeURIComponent(cleanUrl)))
+      localStorage.setItem('CT_ENC_KEY', btoa(encodeURIComponent(cleanKey)))
+    } catch(e){}
+
+    if (window.CLASS_TUNING_CONFIG) {
+      window.CLASS_TUNING_CONFIG.supabaseUrl = cleanUrl
+      window.CLASS_TUNING_CONFIG.supabaseKey = cleanKey
+    }
+
+    alert('🔑 [Supabase 설정 저장 완료]\n구글 OAuth 2.0 및 라이브 DB 연결 설정이 적용되었습니다.')
     onClose()
   }
 
@@ -1140,79 +1158,88 @@ function MainDashboard({ user, classes, questions, onAddQuestion, onAddAnswer, o
 // App 메인 컴포넌트
 export default function App() {
   const [activeTab, setActiveTab] = useState('qa')
-  const [user, setUser] = useState({
-    id: 'u1',
-    nickname: '김탐구',
-    role: 'student',
-    myClassId: 'c1',
-    xp: 80,
-    isStarTutor: true,
-    activePetId: 'tiger'
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem('CLASS_TUNING_ACTIVE_USER')
+    if (savedUser) {
+      try { return JSON.parse(savedUser) } catch(e){}
+    }
+    return {
+      id: 'teacher-main',
+      email: 'ygywam5202@sfl.sen.hs.kr',
+      nickname: '교사 관리자',
+      role: 'teacher',
+      myClassId: 'c1',
+      xp: 1000,
+      isStarTutor: true,
+      activePetId: 'tiger'
+    }
   })
 
   const [petCollection, setPetCollection] = useState([
-    { id: 'tiger', name: '호랑이 🐯', icon: '🐯', xp: 80, isSelected: true },
-    { id: 'dino', name: '티라노 🦖', icon: '🦖', xp: 1050, isSelected: false }
+    { id: 'tiger', name: '호랑이 🐯', icon: '🐯', xp: 0, isSelected: true }
   ])
 
-  const [showcases, setShowcases] = useState([
-    {
-      id: 1,
-      authorName: '김*구 (10305 스타강사)',
-      className: '1학년 3반 수학',
-      petName: '전설 티라노 🦖',
-      petIcon: '🐉',
-      slogan: '시그마(∑)와 극한(lim) 위·아래 기호 수식 100개 답변 채택 완료! 언제든 수학 질문 주세요!',
-      likes: 15,
-      createdAt: '오늘 14:20'
-    },
-    {
-      id: 2,
-      authorName: '이*념 (10211 스타강사)',
-      className: '모의고사 킬러모둠',
-      petName: '전설 드래곤 🐉',
-      petIcon: '🐉',
-      slogan: '미적분 킬러문항 피드백 전문입니다. 5단계 완육 스타강사 혜택으로 풀 경험치 적립 중!',
-      likes: 9,
-      createdAt: '어제 18:05'
-    }
-  ])
-
+  const [showcases, setShowcases] = useState([])
   const [selectedPet, setSelectedPet] = useState(STARTER_PETS[0])
   const [isStarterModalOpen, setIsStarterModalOpen] = useState(false)
   const [isCreateClassOpen, setIsCreateClassOpen] = useState(false)
   const [isSupabaseModalOpen, setIsSupabaseModalOpen] = useState(false)
   const [selectedQrClass, setSelectedQrClass] = useState(null)
 
-  const [classes, setClasses] = useState([
-    { id: 'c1', name: '1학년 3반 수학', description: '수학1 피드백 학급', code: 'MATH3B', studentCount: 24, qrUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=MATH3B' },
-    { id: 'c2', name: '모의고사 킬러문항 모둠', description: '스타강사 특별 수식 스터디', code: 'KILLER', studentCount: 15, qrUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=KILLER' }
-  ])
+  const [classes, setClasses] = useState([])
+  const [questions, setQuestions] = useState([])
 
-  const [questions, setQuestions] = useState([
-    {
-      id: 1,
-      classId: 'c1',
-      className: '1학년 3반 수학',
-      category: '모의고사',
-      authorName: '이*습 (10112)',
-      title: '이차방정식 근의 공식 $x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$ 질문입니다!',
-      content: '판별식 $D = b^2 - 4ac < 0$ 일 때 허근이 되는 이유와 극한 $\\lim_{n \\to \\infty} \\frac{1}{n} = 0$ 의 관계를 설명 부탁드립니다.',
-      imageUrl: null,
-      hasAdopted: false,
-      createdAt: '10분 전',
-      answers: [
-        {
-          id: 101,
-          authorName: '박선생님 (교사)',
-          content: '실수 범위에서는 제곱하여 음수가 되는 수 $\\sqrt{-k}$ 가 존재하지 않기 때문입니다! 시그마 $\\sum_{k=1}^{n}$ 공식도 활용해 보세요.',
-          imageUrl: null,
-          isAdopted: false,
-          createdAt: '5분 전'
+  // 🛡️ Supabase Real OAuth 로그인 감지 및 계정 권한 동기화
+  useEffect(() => {
+    let url = (window.CLASS_TUNING_CONFIG && window.CLASS_TUNING_CONFIG.supabaseUrl) || localStorage.getItem('CLASS_TUNING_SUPABASE_URL') || ''
+    let key = (window.CLASS_TUNING_CONFIG && window.CLASS_TUNING_CONFIG.supabaseKey) || localStorage.getItem('CLASS_TUNING_SUPABASE_KEY') || ''
+
+    if (window.supabase && url && key && url.startsWith('http')) {
+      try {
+        const client = window.supabase.createClient(url, key)
+
+        const applyAuthUser = (authUser) => {
+          if (!authUser) return
+          const email = authUser.email || ''
+          const googleName = authUser.user_metadata?.full_name || authUser.user_metadata?.name || email.split('@')[0] || '사용자'
+          const isTeacher = email.includes('ygywam5202') || email.includes('teacher') || email.includes('admin') || (!/\d{5,}/.test(email) && email.endsWith('@sfl.sen.hs.kr'))
+
+          const loggedUser = {
+            id: authUser.id,
+            email: email,
+            nickname: isTeacher ? `${googleName} 선생님 (교사)` : maskStudentInfo(googleName),
+            role: isTeacher ? 'teacher' : 'student',
+            myClassId: 'c1',
+            xp: isTeacher ? 1000 : 0,
+            isStarTutor: isTeacher,
+            activePetId: 'tiger'
+          }
+
+          setUser(loggedUser)
+          localStorage.setItem('CLASS_TUNING_ACTIVE_USER', JSON.stringify(loggedUser))
         }
-      ]
+
+        client.auth.getSession().then(({ data: { session } }) => {
+          if (session && session.user) {
+            applyAuthUser(session.user)
+          }
+        })
+
+        const { data: { subscription } } = client.auth.onAuthStateChange((_event, session) => {
+          if (session && session.user) {
+            applyAuthUser(session.user)
+          } else if (_event === 'SIGNED_OUT') {
+            setUser(null)
+            localStorage.removeItem('CLASS_TUNING_ACTIVE_USER')
+          }
+        })
+
+        return () => subscription?.unsubscribe()
+      } catch (e) {
+        console.warn('Supabase auth listener error:', e)
+      }
     }
-  ])
+  }, [])
 
   const handleSelectActivePet = (petId) => {
     setPetCollection(prev =>
@@ -1315,30 +1342,55 @@ export default function App() {
   }
 
   const handleGoogleLogin = async () => {
-    const url = (window.CLASS_TUNING_CONFIG && window.CLASS_TUNING_CONFIG.supabaseUrl) || localStorage.getItem('CLASS_TUNING_SUPABASE_URL') || ''
-    const key = (window.CLASS_TUNING_CONFIG && window.CLASS_TUNING_CONFIG.supabaseKey) || localStorage.getItem('CLASS_TUNING_SUPABASE_KEY') || ''
+    let url = (window.CLASS_TUNING_CONFIG && window.CLASS_TUNING_CONFIG.supabaseUrl) || ''
+    let key = (window.CLASS_TUNING_CONFIG && window.CLASS_TUNING_CONFIG.supabaseKey) || ''
 
-    if (window.supabase && url && url.startsWith('http')) {
-      try {
-        const client = window.supabase.createClient(url, key)
-        const { data, error } = await client.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            queryParams: {
-              hd: 'sfl.sen.hs.kr',
-              prompt: 'select_account'
-            },
-            redirectTo: window.location.origin
-          }
-        })
-        if (error) alert('구글 로그인 오류: ' + error.message)
-        return
-      } catch (e) {
-        alert('Supabase 구글 로그인 연결 오류: ' + e.message)
-      }
+    if (!url) {
+      const encUrl = localStorage.getItem('CT_ENC_URL')
+      if (encUrl) try { url = decodeURIComponent(atob(encUrl)) } catch(e) { url = encUrl }
+    }
+    if (!url) url = localStorage.getItem('CLASS_TUNING_SUPABASE_URL') || ''
+
+    if (!key) {
+      const encKey = localStorage.getItem('CT_ENC_KEY')
+      if (encKey) try { key = decodeURIComponent(atob(encKey)) } catch(e) { key = encKey }
+    }
+    if (!key) key = localStorage.getItem('CLASS_TUNING_SUPABASE_KEY') || ''
+
+    url = url.trim()
+    key = key.trim()
+
+    if (!url || !key || !url.startsWith('http')) {
+      alert('⚠️ Supabase Project URL과 Anon Key가 설정되지 않았거나 키가 누락되었습니다.\n설정 창에서 URL과 Key를 모두 입력하고 저장을 눌러주세요!')
+      setIsSupabaseModalOpen(true)
+      return
     }
 
-    setIsSupabaseModalOpen(true)
+    if (!window.supabase) {
+      alert('⚠️ Supabase 라이브러리를 로드하는 중입니다. 페이지를 새로고침 후 시도해 주세요.')
+      return
+    }
+
+    try {
+      const redirectTarget = (window.location.origin && window.location.origin !== 'null' && window.location.protocol.startsWith('http')) 
+        ? window.location.origin 
+        : 'https://classtuning.vercel.app'
+
+      const client = window.supabase.createClient(url, key)
+      const { data, error } = await client.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          queryParams: {
+            hd: 'sfl.sen.hs.kr',
+            prompt: 'select_account'
+          },
+          redirectTo: redirectTarget
+        }
+      })
+      if (error) alert('구글 로그인 오류: ' + error.message)
+    } catch (e) {
+      alert('Supabase 구글 로그인 연결 오류: ' + e.message)
+    }
   }
 
   return (
